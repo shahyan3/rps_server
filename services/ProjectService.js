@@ -30,23 +30,3 @@ class ProjectService {
 }
 
 module.exports = ProjectService;
-
-// (async () => {
-//     await sequelize.sync({ force: true }); // creates the Projects table (if doesn't exist in db)
-//     // Code here
-//     const project1 = Projects.build({
-//       CompanyID: 1,
-//       Name: "P1",
-//       ContextID: 1,
-//       Latitude: 100,
-//       Longitude: 99,
-//       StateID: 1,
-//       RegionID: 11,
-//       RadiusCovered: 12,
-//       SubRegionID: 2,
-//       CommonWealth: 9
-//     });
-
-//     await project1.save();
-//     console.log("\n\nProject saved to database!");
-//   })();
