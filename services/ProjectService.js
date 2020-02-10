@@ -1,0 +1,52 @@
+const { Projects, sequelize } = require("../models/ProjectModel");
+
+class ProjectService {
+  static async getAllProjects() {
+    const projects = await Projects.findAll();
+
+    return projects;
+  }
+
+  static async saveProject(project) {
+    // await sequelize.sync({ force: true }); // creates the Projects row (if doesn't exist in db)
+    const projectBuilt = Projects.build({
+      CompanyID: project.CompanyID,
+      Name: project.Name,
+      ContextID: project.ContextID,
+      Latitude: project.Latitude,
+      Longitude: project.Longitude,
+      StateID: project.StateID,
+      RegionID: project.RegionID,
+      RadiusCovered: project.RadiusCovered,
+      SubRegionID: project.SubRegionID,
+      CommonWealth: project.CommonWealth
+    });
+
+    await projectBuilt.save();
+    console.log("\n Project Saved to database!\n\n");
+
+    return { project: projectBuilt };
+  }
+}
+
+module.exports = ProjectService;
+
+// (async () => {
+//     await sequelize.sync({ force: true }); // creates the Projects table (if doesn't exist in db)
+//     // Code here
+//     const project1 = Projects.build({
+//       CompanyID: 1,
+//       Name: "P1",
+//       ContextID: 1,
+//       Latitude: 100,
+//       Longitude: 99,
+//       StateID: 1,
+//       RegionID: 11,
+//       RadiusCovered: 12,
+//       SubRegionID: 2,
+//       CommonWealth: 9
+//     });
+
+//     await project1.save();
+//     console.log("\n\nProject saved to database!");
+//   })();

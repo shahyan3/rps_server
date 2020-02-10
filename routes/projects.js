@@ -1,0 +1,32 @@
+var express = require("express");
+var router = express.Router();
+var ProjectService = require("../services/ProjectService");
+const { projectSchema } = require("../models/ProjectModel");
+
+// #DEVELOPMENT TEST ROUTE
+router.get("/", async (req, res, next) => {
+  const projects = await ProjectService.getAllProjects();
+
+  if (projects) {
+    res.status(200).send({ ...projects });
+  } else {
+    res.status(404).send({ message: "No projects found in database!" });
+  }
+});
+
+router.post("/", async (req, res, next) => {
+  if (req.body) {
+    // validate request
+    const { error, value } = projectSchema.validate(req.body);
+
+    if (error) {
+      console.log("\n400 Bad Request: Can't save project to db\n");
+      res.status(400).send(error.message);
+    } else {
+      const project = await ProjectService.saveProject(value);
+      res.status(200).send(project);
+    }
+  }
+});
+
+module.exports = router;
