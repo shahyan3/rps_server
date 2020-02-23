@@ -313,20 +313,18 @@ CREATE TABLE `Projects` (
   `StateID` int(11) DEFAULT NULL,
   `RegionID` int(11) DEFAULT NULL,
   `RadiusCovered` int(11) DEFAULT NULL,
-  `SubRegionID` int(11) NOT NULL,
+   `Deadline` DATETIME NOT NULL, 
   `CommonWealth` tinyint(4) NOT NULL,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `ID_UNIQUE` (`ID`),
   KEY `Company_idx` (`CompanyID`),
-  KEY `SubRegionID_idx` (`SubRegionID`),
-  KEY `ContextID_idx` (`ContextID`),
+   KEY `ContextID_idx` (`ContextID`),
   KEY `StateID_idx` (`StateID`),
   KEY `RegionID_idx` (`RegionID`),
   CONSTRAINT `CompanyID_2` FOREIGN KEY (`CompanyID`) REFERENCES `companies` (`ID`),
   CONSTRAINT `ContextID` FOREIGN KEY (`ContextID`) REFERENCES `legislativecontext` (`ID`),
   CONSTRAINT `RegionID` FOREIGN KEY (`RegionID`) REFERENCES `regions` (`ID`),
-  CONSTRAINT `StateID` FOREIGN KEY (`StateID`) REFERENCES `states` (`ID`),
-  CONSTRAINT `SubRegionID` FOREIGN KEY (`SubRegionID`) REFERENCES `subregions` (`ID`)
+  CONSTRAINT `StateID` FOREIGN KEY (`StateID`) REFERENCES `states` (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

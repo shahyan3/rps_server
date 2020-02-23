@@ -8,7 +8,8 @@ router.get("/", async (req, res, next) => {
   const projects = await ProjectService.getAllProjects();
 
   if (projects) {
-    res.status(200).send({ ...projects });
+    res.status(200).send({ all: projects });
+    // res.json({ all: projects });
   } else {
     res.status(404).send({ message: "No projects found in database!" });
   }

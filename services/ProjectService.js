@@ -7,6 +7,12 @@ class ProjectService {
     return projects;
   }
 
+  static async deleteAllProjects() {
+    return await Projects.destroy({
+      where: {}
+    });
+  }
+
   static async saveProject(project) {
     // await sequelize.sync({ force: true }); // creates the Projects row (if doesn't exist in db)
     const projectBuilt = Projects.build({
@@ -18,7 +24,7 @@ class ProjectService {
       StateID: project.StateID,
       RegionID: project.RegionID,
       RadiusCovered: project.RadiusCovered,
-      SubRegionID: project.SubRegionID,
+      Deadline: project.Deadline,
       CommonWealth: project.CommonWealth
     });
 

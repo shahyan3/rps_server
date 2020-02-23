@@ -32,4 +32,6 @@ app.use("/api/projects", projectsRouter);
 app.use("/api/speciesList", speciesListRouter);
 // app.use("/users", usersRouter);
 
+// console.log("DATABASE: " + process.env.DB_NAME);
+
 module.exports = app;
