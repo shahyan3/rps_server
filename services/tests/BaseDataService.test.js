@@ -22,6 +22,19 @@ describe("/api/speciesList", () => {
   });
 
   describe("POST /api/speciesList", () => {
+    it("it returns error message if no species found for query", async () => {
+      const query = {
+        searchType: "name",
+        searchQuery: "jajajaj"
+      };
+      const res = await request(server)
+        .post("/api/speciesList")
+        .send(query);
+
+      expect(res.status).toBe(400);
+    });
+  });
+  describe("POST /api/speciesList", () => {
     it("it return species if the queried species is found in data base", async () => {
       const query = {
         searchType: "name",
