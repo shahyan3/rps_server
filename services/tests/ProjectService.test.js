@@ -8,7 +8,7 @@ describe("/api/projects", () => {
   });
   afterEach(async () => {
     server.close();
-    // await ProjectService.deleteAllProjects();
+    await ProjectService.deleteAllProjects();
   });
 
   describe("GET /", () => {

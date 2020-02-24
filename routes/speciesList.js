@@ -1,5 +1,7 @@
 var express = require("express");
 var router = express.Router();
+var BaseDataService = require("../services/BaseDataService");
+const { baseDataSchema } = require("../models/BaseDataModel");
 
 // #DEVELOPMENT TEST ROUTE
 router.get("/", async (req, res, next) => {
@@ -7,16 +9,23 @@ router.get("/", async (req, res, next) => {
 });
 
 router.post("/", async (req, res, next) => {
+  let species;
+  let query;
+
   if (req.body) {
     // validate request
-    // const { error, value } = projectSchema.validate(req.body);
-    // if (error) {
-    //   console.log("\n400 Bad Request: Can't save project to db\n");
-    //   res.status(400).send(error.message);
-    // } else {
-    //   const project = await ProjectService.saveProject(value);
-    //   res.status(200).send(project);
-    // }
+    if (req.body.searchType === "name") {
+      if (req.body.searchQuery) {
+        query = req.body.searchQuery;
+        try {
+          species = await BaseDataService.getSpeciesByScientificName(query);
+          res.status(200).send({ species: species });
+        } catch (err) {
+          res.status(400).send({ error: err.message });
+        }
+      }
+    }
+    // if req.body.searchType == "id"
   }
 });
 
