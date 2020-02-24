@@ -13,8 +13,17 @@ class ProjectService {
     });
   }
 
+  static async getProjectByName(name) {
+    const project = await Projects.findOne({ where: { Name: name } });
+    return project;
+  }
+
   static async saveProject(project) {
-    // await sequelize.sync({ force: true }); // creates the Projects row (if doesn't exist in db)
+    let checkProject = await this.getProjectByName(project.Name);
+    if (checkProject != null && checkProject.Name) {
+      throw new Error("Error! Project with given name exists in database");
+    }
+
     const projectBuilt = Projects.build({
       CompanyID: project.CompanyID,
       Name: project.Name,

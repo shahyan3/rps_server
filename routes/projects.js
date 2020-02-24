@@ -22,10 +22,15 @@ router.post("/", async (req, res, next) => {
 
     if (error) {
       console.log("\n400 Bad Request: Can't save project to db\n");
-      res.status(400).send(error.message);
+      res.status(400).send({ error: error.message });
     } else {
-      const project = await ProjectService.saveProject(value);
-      res.status(200).send(project);
+      try {
+        const project = await ProjectService.saveProject(value);
+        res.status(200).send(project);
+      } catch (err) {
+        console.log("Project already exists!", err);
+        res.status(400).send({ error: err.message });
+      }
     }
   }
 });
