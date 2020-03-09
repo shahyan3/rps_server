@@ -10,6 +10,8 @@ var database = require("./loaders/database"); /* Database depedency */
 var indexRouter = require("./routes/index");
 var projectsRouter = require("./routes/projects");
 var speciesListRouter = require("./routes/speciesList");
+var consolidatedListRouter = require("./routes/consolidatedList");
+var looAnalysisRouter = require("./routes/looAnalysis");
 // var usersRouter = require("./routes/users");
 
 var app = express();
@@ -30,6 +32,9 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/api/projects", projectsRouter);
 app.use("/api/speciesList", speciesListRouter);
+app.use("/api/consolidatedList", consolidatedListRouter);
+app.use("/api/looAnalysis", looAnalysisRouter);
+
 // app.use("/users", usersRouter);
 
 // console.log("DATABASE: " + process.env.DB_NAME);

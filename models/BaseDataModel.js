@@ -30,11 +30,6 @@ const BaseData = sequelize.define(
   }
 );
 
-// (async () => {
-//   await sequelize.sync({ force: true });
-//   // Code here
-// })();
-
 // Joi Schema
 const baseDataSchema = Joi.object({
   ScientificName: Joi.string().required(),

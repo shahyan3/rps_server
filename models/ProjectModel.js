@@ -1,6 +1,8 @@
 const Joi = require("@hapi/joi");
 const { Sequelize, Model, DataTypes } = require("sequelize");
 
+// const { Versions, sequelize } = require("../models/VersionsModel");
+
 const sequelize = new Sequelize("rps_2020_test", "root", "password", {
   dialect: "mysql",
   dialectOptions: {
@@ -25,10 +27,13 @@ const Projects = sequelize.define(
     RegionID: DataTypes.INTEGER,
     Deadline: DataTypes.DATE,
     RadiusCovered: DataTypes.INTEGER,
-    CommonWealth: DataTypes.INTEGER
+    CommonWealth: DataTypes.INTEGER,
+    ProjectStatus: DataTypes.TEXT,
+    ProjectSection: DataTypes.TEXT
   },
   {
-    tableName: "Projects"
+    tableName: "Projects",
+    timestamps: false
   }
 );
 
@@ -48,7 +53,9 @@ const projectSchema = Joi.object({
   RegionID: Joi.number().required(),
   RadiusCovered: Joi.number().required(),
   Deadline: Joi.date().required(),
-  CommonWealth: Joi.number().required()
+  CommonWealth: Joi.number().required(),
+  ProjectStatus: Joi.string().required(),
+  ProjectSection: Joi.string().required()
 });
 
 module.exports = {

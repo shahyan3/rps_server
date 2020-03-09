@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 var BaseDataService = require("../services/BaseDataService");
-const { baseDataSchema } = require("../models/BaseDataModel");
+// const { baseDataSchema } = require("../models/BaseDataModel");
 
 // #DEVELOPMENT TEST ROUTE
 router.get("/", async (req, res, next) => {
