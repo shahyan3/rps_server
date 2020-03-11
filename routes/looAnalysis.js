@@ -36,14 +36,6 @@ router.post("/", async (req, res, next) => {
 router.post("/saveLooAnalysis", async (req, res, next) => {
   if (req.body) {
     if (req.body.looSpecies && req.body.projectID && req.body.versionID) {
-      // #
-      console.log(
-        "yeeeee",
-        req.body.looSpecies,
-        req.body.projectID,
-        req.body.versionID
-      );
-
       let projectID = req.body.projectID;
       let versionID = req.body.versionID;
       // for loop to test all the species object fields are correct in array using JOI
@@ -96,7 +88,11 @@ router.post("/saveLooAnalysis", async (req, res, next) => {
       try {
         // find species in consolidated list table with the version and project id association
         // returns 0 if successful
-        const result = await LooAnalysisService.saveLooAnalysis(looSpecies);
+        const result = await LooAnalysisService.saveLooAnalysis(
+          looSpecies,
+          projectID,
+          versionID
+        );
 
         res
           .status(200)

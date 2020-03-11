@@ -5,6 +5,15 @@ const {
 } = require("../models/BaseDataModel");
 
 class BaseDataService {
+  static async getAllSpecies() {
+    const allSpecies = await BaseData.findAll();
+
+    if (allSpecies != null) {
+      return allSpecies;
+    } else {
+      throw new Error("Error: Species not found in base data!");
+    }
+  }
   static async getSpeciesByScientificName(name) {
     const species = await BaseData.findOne({
       where: { ScientificName: name }

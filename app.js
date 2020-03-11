@@ -12,6 +12,7 @@ var projectsRouter = require("./routes/projects");
 var speciesListRouter = require("./routes/speciesList");
 var consolidatedListRouter = require("./routes/consolidatedList");
 var looAnalysisRouter = require("./routes/looAnalysis");
+var impactIntensityRouter = require("./routes/impactIntensity");
 // var usersRouter = require("./routes/users");
 
 var app = express();
@@ -34,6 +35,7 @@ app.use("/api/projects", projectsRouter);
 app.use("/api/speciesList", speciesListRouter);
 app.use("/api/consolidatedList", consolidatedListRouter);
 app.use("/api/looAnalysis", looAnalysisRouter);
+app.use("/api/impactIntensity", impactIntensityRouter);
 
 // app.use("/users", usersRouter);
 

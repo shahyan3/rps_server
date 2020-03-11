@@ -1,4 +1,5 @@
 const { LOO } = require("../models/LooAnalysisModel");
+const ImpactIntensityService = require("../services/ImpactIntensityService");
 
 const ConsolidatedListService = require("../services/ConsolidatedListService");
 const BaseDataService = require("../services/BaseDataService");
@@ -40,11 +41,16 @@ class LooAnalysisService {
     }
   }
 
-  static async saveLooAnalysis(looSpecies) {
+  static async saveLooAnalysis(looSpecies, projectID, versionID) {
     // console.log("save to loo....");
     try {
       for (var i = 0; i < looSpecies.length; i++) {
         // save project
+
+        // if species is type "plant" then in Loo fauna field is "no"
+
+        // if AtlasRecords (in ConsolidatedList) is greater than 5 - Recent field in Loo is "yes" true = 1, false = 0
+
         const looSpeciesBuilt = LOO.build({
           ProjectID: looSpecies[i].ProjectID,
           VersionID: looSpecies[i].VersionID,
@@ -52,12 +58,29 @@ class LooAnalysisService {
           Lookup: looSpecies[i].Lookup,
           SurveyAdequacy: looSpecies[i].SurveyAdequacy,
           ImpactIntensity: looSpecies[i].ImpactIntensity
+          // add fauna and recent fields from fronend is loo table? #todo
         });
 
         await looSpeciesBuilt.save();
       }
 
       console.log("\n Loo Analysis Species Saved to database Loo table!\n\n");
+
+      // Initially, consolidated list is saved to impact intensity table, as soon as loo is created/saved.
+      const list = await ConsolidatedListService.getConsolidatedListByProjectVersionID(
+        projectID,
+        versionID
+      );
+
+      // Save consolidated list to impact intensity (From consolidated list! as is in data schema!)
+      try {
+        await ImpactIntensityService.saveConsolidatedList(list);
+      } catch (err) {
+        return new Error(
+          "Impact Intensity table values could not be created using consolidated list for this project. Contact admin!"
+        );
+      }
+
       return 0;
     } catch (err) {
       return err;

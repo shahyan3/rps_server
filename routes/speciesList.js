@@ -29,4 +29,13 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.post("/all", async (req, res, next) => {
+  try {
+    const allSpecies = await BaseDataService.getAllSpecies();
+    res.status(200).send(allSpecies);
+  } catch (err) {
+    res.status(400).send("Invalid request");
+  }
+});
+
 module.exports = router;
