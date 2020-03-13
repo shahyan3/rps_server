@@ -31,7 +31,7 @@ const ImpactIntensity = sequelize.define(
     A7: DataTypes.INTEGER,
     A8: DataTypes.INTEGER,
     IndirectImpact: DataTypes.BOOLEAN,
-    SignificantImpact: DataTypes.BOOLEAN,
+    SignificantImpact: DataTypes.INTEGER,
     PotentialForImpact: DataTypes.BOOLEAN
   },
   {
@@ -67,51 +67,54 @@ ImpactIntensity.belongsTo(ConsolidatedList, {
 
 // Joi Schema
 const impactIntensitySchema = Joi.object({
+  ID: Joi.number().required(),
   ProjectID: Joi.number().required(),
-  ProjectID: Joi.number().required(),
+  VersionID: Joi.number().required(),
   SpeciesID: Joi.number().required(),
   PotentialForImpact: Joi.boolean().required(),
   IndirectImpact: Joi.boolean().required(),
   A1: Joi.number()
     .integer()
-    .required()
-    .min(1)
-    .max(3),
-  A2: Joi.number()
-    .integer()
-    .required()
-    .min(1)
-    .max(3),
-  A3: Joi.number()
-    .integer()
-    .required()
-    .min(1)
-    .max(3),
-  A4: Joi.number()
-    .integer()
-    .required()
-    .min(1)
-    .max(3),
-  A5: Joi.number()
-    .integer()
-    .required()
-    .min(1)
-    .max(3),
-  A6: Joi.number()
-    .integer()
-    .required()
-    .min(1)
-    .max(3),
-  A7: Joi.number()
-    .integer()
-    .required()
-    .min(1)
-    .max(3),
-  A8: Joi.number()
-    .integer()
-    .required()
     .min(1)
     .max(3)
+    .required(),
+  A2: Joi.number()
+    .integer()
+    .min(1)
+    .max(3)
+    .required(),
+  A3: Joi.number()
+    .integer()
+    .min(1)
+    .max(3)
+    .required(),
+
+  A4: Joi.number()
+    .integer()
+    .min(1)
+    .max(3)
+    .required(),
+  A5: Joi.number()
+    .integer()
+    .min(1)
+    .max(3)
+    .required(),
+
+  A6: Joi.number()
+    .integer()
+    .min(1)
+    .max(3)
+    .required(),
+  A7: Joi.number()
+    .integer()
+    .min(1)
+    .max(3)
+    .required(),
+  A8: Joi.number()
+    .integer()
+    .min(1)
+    .max(3)
+    .required()
 });
 
 module.exports = {

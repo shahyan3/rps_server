@@ -11,6 +11,14 @@ const BaseDataService = require("../services/BaseDataService");
 
 // Figure out how to create foriegn key relations using sequilize and do queries to test
 class ConsolidatedListService {
+  static async getSAIIForSpecies(speciesID) {
+    const species = await ConsolidatedList.findOne({
+      where: { SpeciesID: speciesID }
+    });
+
+    return species;
+  }
+
   static async getConsolidatedListByProjectVersionID(project_id, version_id) {
     const list = await ConsolidatedList.findAll({
       where: { ProjectID: project_id, VersionID: version_id }

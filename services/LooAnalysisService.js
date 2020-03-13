@@ -4,8 +4,8 @@ const ImpactIntensityService = require("../services/ImpactIntensityService");
 const ConsolidatedListService = require("../services/ConsolidatedListService");
 const BaseDataService = require("../services/BaseDataService");
 
-// Figure out how to create foriegn key relations using sequilize and do queries to test
 class LooAnalysisService {
+  // returns all the species info (from base) that is in a particular consolidated list
   static async getConsolidatedSpecies(project_id, version_id) {
     let species;
     let data;
@@ -41,8 +41,27 @@ class LooAnalysisService {
     }
   }
 
+  static async getLooListByProjectVersionID(projectID, versionID) {
+    const looSpecies = await LOO.findAll({
+      where: {
+        ProjectID: projectID,
+        VersionID: versionID
+      }
+    });
+
+    if (looSpecies != null) {
+      return looSpecies;
+    } else {
+      return new Error(
+        `lookup score could not be found from species with project id:${projectID}, speciesID: ${speciesID} and ${versionID}`
+      );
+    }
+  }
+
   static async saveLooAnalysis(looSpecies, projectID, versionID) {
     // console.log("save to loo....");
+    let looSavedSpecies;
+
     try {
       for (var i = 0; i < looSpecies.length; i++) {
         // save project
@@ -66,18 +85,19 @@ class LooAnalysisService {
 
       console.log("\n Loo Analysis Species Saved to database Loo table!\n\n");
 
-      // Initially, consolidated list is saved to impact intensity table, as soon as loo is created/saved.
-      const list = await ConsolidatedListService.getConsolidatedListByProjectVersionID(
+      // get saved loo species
+      looSavedSpecies = await this.getLooListByProjectVersionID(
         projectID,
         versionID
       );
 
-      // Save consolidated list to impact intensity (From consolidated list! as is in data schema!)
+      // Save initial loo species to impact intensity (from LOO table)
       try {
-        await ImpactIntensityService.saveConsolidatedList(list);
+        await ImpactIntensityService.saveConsolidatedList(looSavedSpecies);
+        console.log("Save initial loo species to impact intensity");
       } catch (err) {
         return new Error(
-          "Impact Intensity table values could not be created using consolidated list for this project. Contact admin!"
+          "Impact Intensity table values could not be created using loo species for this project. Contact admin!"
         );
       }
 
