@@ -1,14 +1,14 @@
 const Joi = require("@hapi/joi");
 const { Sequelize, Model, DataTypes } = require("sequelize");
 
-// const { Versions, sequelize } = require("../models/VersionsModel");
+const sequelize = require("../config");
 
-const sequelize = new Sequelize("rps_2020_test", "root", "password", {
-  dialect: "mysql",
-  dialectOptions: {
-    // Your mysql2 options here
-  }
-});
+// const sequelize = new Sequelize("rps_2020_test", "root", "password", {
+//   dialect: "mysql",
+//   dialectOptions: {
+//     // Your mysql2 options here
+//   }
+// });
 
 const Projects = sequelize.define(
   "Projects",
@@ -16,7 +16,7 @@ const Projects = sequelize.define(
     ID: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
-      primaryKey: true
+      primaryKey: true,
     },
     CompanyID: DataTypes.INTEGER,
     Name: DataTypes.TEXT,
@@ -29,11 +29,11 @@ const Projects = sequelize.define(
     RadiusCovered: DataTypes.INTEGER,
     CommonWealth: DataTypes.INTEGER,
     ProjectStatus: DataTypes.TEXT,
-    ProjectSection: DataTypes.TEXT
+    ProjectSection: DataTypes.TEXT,
   },
   {
     tableName: "Projects",
-    timestamps: false
+    timestamps: false,
   }
 );
 
@@ -55,11 +55,11 @@ const projectSchema = Joi.object({
   Deadline: Joi.date().required(),
   CommonWealth: Joi.number().required(),
   ProjectStatus: Joi.string().required(),
-  ProjectSection: Joi.string().required()
+  ProjectSection: Joi.string().required(),
 });
 
 module.exports = {
   Projects,
   sequelize,
-  projectSchema
+  projectSchema,
 };

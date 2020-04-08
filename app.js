@@ -13,6 +13,7 @@ var speciesListRouter = require("./routes/speciesList");
 var consolidatedListRouter = require("./routes/consolidatedList");
 var looAnalysisRouter = require("./routes/looAnalysis");
 var impactIntensityRouter = require("./routes/impactIntensity");
+var authRouter = require("./routes/auth");
 // var usersRouter = require("./routes/users");
 
 var app = express();
@@ -24,7 +25,7 @@ app.use(cookieParser());
 // configure the app to use bodyParser()
 app.use(
   bodyParser.urlencoded({
-    extended: true
+    extended: true,
   })
 );
 app.use(bodyParser.json());
@@ -36,6 +37,9 @@ app.use("/api/speciesList", speciesListRouter);
 app.use("/api/consolidatedList", consolidatedListRouter);
 app.use("/api/looAnalysis", looAnalysisRouter);
 app.use("/api/impactIntensity", impactIntensityRouter);
+app.use("/auth", authRouter);
+
+console.log("====> new :]");
 
 // app.use("/users", usersRouter);
 

@@ -36,13 +36,28 @@ router.post("/", async (req, res, next) => {
         if (selectedSpecies[i].ProjectID !== projectID) {
           res.status(400).send({
             error:
-              "Error: ProjectID field for every species in the list must reference the same project."
+              "Error: ProjectID field for every species in the list must reference the same project.",
           });
 
           return;
         }
       }
 
+      // check if no duplicate species id sent by client
+      var SpeciesID = selectedSpecies.map(function (item) {
+        return item.SpeciesID;
+      });
+
+      var isDuplicate = SpeciesID.some(function (item, idx) {
+        return SpeciesID.indexOf(item) != idx;
+      });
+
+      if (isDuplicate)
+        return res
+          .status(400)
+          .send("Invalid list sent: duplicate species id not allowed");
+
+      // save to db
       try {
         const consolidatedList = await ConsolidatedListService.save(
           selectedSpecies,
@@ -62,7 +77,7 @@ router.post("/", async (req, res, next) => {
 
         res.status(200).send({
           projectInfo: { projectID: projectID, versionID: versionID.VersionID },
-          consolidatedList
+          consolidatedList,
         });
       } catch (err) {
         res.status(400).send({ error: err.message });

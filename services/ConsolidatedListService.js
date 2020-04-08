@@ -1,6 +1,6 @@
 const {
   ConsolidatedList,
-  sequelize
+  sequelize,
 } = require("../models/ConsolidatedListModel");
 
 const { Projects } = require("../models/ProjectModel");
@@ -13,7 +13,7 @@ const BaseDataService = require("../services/BaseDataService");
 class ConsolidatedListService {
   static async getSAIIForSpecies(speciesID) {
     const species = await ConsolidatedList.findOne({
-      where: { SpeciesID: speciesID }
+      where: { SpeciesID: speciesID },
     });
 
     return species;
@@ -21,7 +21,7 @@ class ConsolidatedListService {
 
   static async getConsolidatedListByProjectVersionID(project_id, version_id) {
     const list = await ConsolidatedList.findAll({
-      where: { ProjectID: project_id, VersionID: version_id }
+      where: { ProjectID: project_id, VersionID: version_id },
     });
     return list;
   }
@@ -35,9 +35,9 @@ class ConsolidatedListService {
         {
           model: Projects,
           as: "Project",
-          attributes: ["Name"]
-        }
-      ]
+          attributes: ["Name"],
+        },
+      ],
     });
     return list;
   }
@@ -49,6 +49,10 @@ class ConsolidatedListService {
 
     // Get the "Version data" from Version table with reference to this project
     const versionData = await VersionsService.getVersionByProjectId(projectID);
+    // console.log("VERSION ----===>", versionData);
+
+    // update by deleting previous list is exists (removes duplicate saved of same list)
+    await ConsolidatedListService.deleteList(projectID, versionData.VersionID);
 
     // save data to ConsolidatedList data table
     for (var i = 0; i < selectedSpecies.length; i++) {
@@ -75,7 +79,7 @@ class ConsolidatedListService {
         BAM: species_selected.BAM,
         ATLAS: species_selected.ATLAS,
         AtlasRecords: species_selected.AtlasRecords,
-        SAII: species_selected.SAII
+        SAII: species_selected.SAII,
         // CandidateSpecies: onlineDataSpecies.CandidateSpecies
       });
 
@@ -89,6 +93,12 @@ class ConsolidatedListService {
     );
 
     return consolidatedSpeciesList;
+  }
+
+  static async deleteList(projectID, versionID) {
+    await ConsolidatedList.destroy({
+      where: { ProjectID: projectID, VersionID: versionID },
+    });
   }
 }
 

@@ -3,12 +3,14 @@ const { Sequelize, Model, DataTypes } = require("sequelize");
 
 const { Projects } = require("../models/ProjectModel");
 
-const sequelize = new Sequelize("rps_2020_test", "root", "password", {
-  dialect: "mysql",
-  dialectOptions: {
-    // Your mysql2 options here
-  }
-});
+const sequelize = require("../config");
+
+// const sequelize = new Sequelize("rps_2020_test", "root", "password", {
+//   dialect: "mysql",
+//   dialectOptions: {
+//     // Your mysql2 options here
+//   }
+// });
 
 const Versions = sequelize.define(
   "Versions",

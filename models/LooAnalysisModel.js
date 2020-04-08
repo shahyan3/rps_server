@@ -5,12 +5,14 @@ const { Projects } = require("../models/ProjectModel");
 const { Versions } = require("../models/VersionsModel");
 const { ConsolidatedList } = require("../models/ConsolidatedListModel");
 
-const sequelize = new Sequelize("rps_2020_test", "root", "password", {
-  dialect: "mysql",
-  dialectOptions: {
-    // Your mysql2 options here
-  }
-});
+const sequelize = require("../config");
+
+// const sequelize = new Sequelize("rps_2020_test", "root", "password", {
+//   dialect: "mysql",
+//   dialectOptions: {
+//     // Your mysql2 options here
+//   }
+// });
 
 const LOO = sequelize.define(
   "LOO",
