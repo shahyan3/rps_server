@@ -44,7 +44,7 @@ const Projects = sequelize.define(
 
 // Joi Schema
 const projectSchema = Joi.object({
-  CompanyID: Joi.number().required(),
+  CompanyName: Joi.string().required(),
   Name: Joi.string().required(),
   ContextID: Joi.number().required(),
   Latitude: Joi.number().required(),

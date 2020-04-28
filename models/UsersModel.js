@@ -1,5 +1,7 @@
 const Joi = require("@hapi/joi");
 const { Sequelize, Model, DataTypes } = require("sequelize");
+const jwt = require("jsonwebtoken");
+var config = require("config");
 
 const { Roles } = require("./RolesModel");
 
@@ -33,6 +35,20 @@ Users.belongsTo(Roles, {
   foreignKey: "RoleID",
 });
 
+// attach a method to user schema object's methods
+// JWT - generate token with payload  {their info } sent to the authenticated client
+// token generated against a private key used to uncode token i.e. payload data
+// the token is generate against the private key defined by in the environment variable when
+// server is startup - config.get grabs the key from environment variable (check app.js line 21)
+generateAuthToken = function (userRole) {
+  const token = jwt.sign(
+    { id: this.ID, firstName: this.FirstName, role: userRole },
+    config.get("jwtPrivateKey")
+  );
+
+  return token;
+};
+
 // (async () => {
 //   await sequelize.sync({ force: true });
 //   // Code here
@@ -57,5 +73,6 @@ Users.belongsTo(Roles, {
 module.exports = {
   Users,
   sequelize,
+  // generateAuthToken,
   //   userSchema,
 };

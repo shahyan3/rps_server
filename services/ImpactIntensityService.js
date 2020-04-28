@@ -1,6 +1,6 @@
 const {
   ImpactIntensity,
-  sequelize
+  sequelize,
 } = require("../models/ImpactIntensityModel");
 
 const ConsolidatedListService = require("./ConsolidatedListService");
@@ -34,7 +34,7 @@ class ImpactIntensityService {
   }
   static async getImpactIntensityRow(rowID) {
     const row = await ImpactIntensity.findOne({
-      where: { ID: rowID }
+      where: { ID: rowID },
     });
 
     if (row != null) {
@@ -48,7 +48,24 @@ class ImpactIntensityService {
 
   static async getImpactIntensityByProjectVersionID(projectID, versionID) {
     const all = await ImpactIntensity.findAll({
-      where: { ProjectID: projectID, VersionID: versionID }
+      where: {
+        ProjectID: projectID,
+        VersionID: versionID,
+      },
+    });
+    return all;
+  }
+
+  static async getImpactIntensityByIdExcludeSignificantImpact(
+    projectID,
+    versionID
+  ) {
+    const all = await ImpactIntensity.findAll({
+      where: {
+        ProjectID: projectID,
+        VersionID: versionID,
+      },
+      attributes: { exclude: ["updatedAt", "createdAt", "SignificantImpact"] },
     });
     return all;
   }
@@ -65,7 +82,10 @@ class ImpactIntensityService {
         let speciesRow = allSpeciesRows[i];
         // calculate significant impact value
         let significantImpact = this.calculateSignificantImpact(speciesRow);
-        console.log(significantImpact);
+        console.log(
+          "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",
+          significantImpact
+        );
 
         if (significantImpact == null) {
           throw new Error(
@@ -78,8 +98,8 @@ class ImpactIntensityService {
             ID: speciesRow.ID,
             SpeciesID: speciesRow.SpeciesID,
             ProjectID: projectID,
-            VersionID: versionID
-          }
+            VersionID: versionID,
+          },
         });
 
         // check if returned successfully
@@ -95,7 +115,7 @@ class ImpactIntensityService {
             A8: speciesRow.A8,
             IndirectImpact: speciesRow.IndirectImpact,
             PotentialForImpact: speciesRow.PotentialForImpact,
-            SignificantImpact: significantImpact
+            SignificantImpact: significantImpact,
           });
 
           await impactRow.save();
@@ -124,7 +144,7 @@ class ImpactIntensityService {
       let species = looSavedSpeciesList[i];
       let speciesID = species.SpeciesID;
       let speciesLookup = species.Lookup;
-      let lowScore = 1; // look up score
+      let lowScore = 1; // look up score // make it a constant LOWSCORE and true false as YES and NO constants below.
 
       // get lookup score of species, if <=1 potetial for impact flag is false
       if (speciesLookup <= lowScore) {
@@ -148,7 +168,7 @@ class ImpactIntensityService {
         ProjectID: species.ProjectID,
         VersionID: species.VersionID,
         SpeciesID: species.SpeciesID,
-        PotentialForImpact: impactPotentialFlag
+        PotentialForImpact: impactPotentialFlag,
       });
 
       savedImpactIntensity = await impactIntesitytBuilt.save();

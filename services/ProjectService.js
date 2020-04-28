@@ -1,4 +1,5 @@
-const { Projects, sequelize } = require("../models/ProjectModel");
+const { Projects } = require("../models/ProjectModel");
+const { Companies, sequelize } = require("../models/CompanyModel");
 
 const VersionsService = require("./VersionsService");
 
@@ -11,7 +12,7 @@ class ProjectService {
 
   static async deleteAllProjects() {
     return await Projects.destroy({
-      where: {}
+      where: {},
     });
   }
 
@@ -32,9 +33,28 @@ class ProjectService {
       throw new Error("Error! Project with given name exists in database");
     }
 
+    // check client's company exists in the db
+    const company = await Companies.findOne({
+      where: { Name: project.CompanyName },
+    });
+
+    if (!company) {
+      // client company doesn't exist - register it and create user for it
+      const newCompanyBuilt = await Companies.build({
+        Name: project.CompanyName,
+      });
+      await newCompanyBuilt.save();
+    }
+
+    // get company id from db
+    const { ID } = await Companies.findOne({
+      where: { Name: project.CompanyName },
+    });
+
     // save project
     const projectBuilt = Projects.build({
-      CompanyID: project.CompanyID,
+      // CompanyID: project.CompanyID,
+      CompanyID: ID,
       Name: project.Name,
       ContextID: project.ContextID,
       Latitude: project.Latitude,
@@ -45,7 +65,7 @@ class ProjectService {
       Deadline: project.Deadline,
       CommonWealth: project.CommonWealth,
       ProjectStatus: project.ProjectStatus,
-      ProjectSection: project.ProjectSection
+      ProjectSection: project.ProjectSection,
     });
 
     let savedProject = await projectBuilt.save();
@@ -60,7 +80,7 @@ class ProjectService {
       LastReviewed: new Date(),
       ReviewedBy: "Mark T",
       Created: new Date(),
-      CreatedBy: "Joe Doe"
+      CreatedBy: "Joe Doe",
     };
 
     if (savedProject) {

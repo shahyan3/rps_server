@@ -14,18 +14,15 @@ router.post("/", async (req, res, next) => {
 
   if (req.body) {
     // validate request
-    if (req.body.searchType === "name") {
-      if (req.body.searchQuery) {
-        query = req.body.searchQuery;
-        try {
-          species = await BaseDataService.getSpeciesByScientificName(query);
-          res.status(200).send({ species: species });
-        } catch (err) {
-          res.status(400).send({ error: err.message });
-        }
+    if (req.body.speciesID) {
+      query = req.body.speciesID;
+      try {
+        species = await BaseDataService.getSpeciesById(query);
+        res.status(200).send({ species: species });
+      } catch (err) {
+        res.status(400).send({ error: err.message });
       }
     }
-    // if req.body.searchType == "id"
   }
 });
 

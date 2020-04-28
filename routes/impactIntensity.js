@@ -4,20 +4,23 @@ var router = express.Router();
 var ImpactIntensityService = require("../services/ImpactIntensityService");
 var ProjectService = require("../services/ProjectService");
 var VersionsService = require("../services/VersionsService");
+var LooAnalysisService = require("../services/LooAnalysisService");
+var BaseDataService = require("../services/BaseDataService");
 
 var { impactIntensitySchema } = require("../models/ImpactIntensityModel");
 
 // Send the impact intensity for the project and version given
-router.get("/", async (req, res, next) => {
+router.post("/", async (req, res, next) => {
   if (req.body.data.projectID && req.body.data.versionID) {
     let projectID = req.body.data.projectID;
     let versionID = req.body.data.versionID;
 
     try {
-      const getImpactIntesitySpecies = await ImpactIntensityService.getImpactIntensityByProjectVersionID(
+      const getImpactIntesitySpecies = await ImpactIntensityService.getImpactIntensityByIdExcludeSignificantImpact(
         projectID,
         versionID
       );
+
       res.status(200).send({ data: getImpactIntesitySpecies });
       return;
     } catch (err) {
@@ -29,7 +32,94 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+// get report data from impact intensity for given project/version id
+router.post("/report", async (req, res, next) => {
+  if (req.body.projectID && req.body.versionID) {
+    const projectID = req.body.projectID;
+    const versionID = req.body.versionID;
+    let reportData = [];
+    try {
+      // get the project
+      let project = await ProjectService.getProjectByID(projectID);
+      // get the loo
+
+      let looList = await LooAnalysisService.getLooListByProjectVersionID(
+        projectID,
+        versionID
+      );
+
+      // get the impact
+      let impactList = await ImpactIntensityService.getImpactIntensityByProjectVersionID(
+        projectID,
+        versionID
+      );
+
+      // for every impact row
+      for (var i = 0; i < impactList.length; i++) {
+        let speciesID = impactList[i].SpeciesID;
+        // find species data in base data table
+        let baseDataSpecies = await BaseDataService.getSpeciesById(speciesID);
+
+        if (baseDataSpecies) {
+          // create species object from one table row in report
+          let scientificName = baseDataSpecies.ScientificName;
+          let projectName = project.Name;
+          // let clientName = project.Client
+          let contextID = project.ContextID;
+
+          for (var i = 0; i < looList.length; i++) {
+            if (looList[i].SpeciesID == impactList[i].SpeciesID) {
+              const species = looList[i];
+              const impactRow = impactList[i];
+
+              // get data from loo for match impact and loo table species
+              let looLookupScore = species.Lookup;
+              let looSurveyScore = species.SurveyAdequacy;
+
+              // get data from impact row for matched impact and loo table species
+              let indirectImpact, significantImpact, potentialForImpact;
+
+              impactRow.IndirectImpact
+                ? (indirectImpact = "Yes")
+                : (significantImpact = "No");
+
+              impactRow.SignificantImpact
+                ? (significantImpact = "Yes")
+                : (significantImpact = "No");
+
+              impactRow.PotentialForImpact
+                ? (potentialForImpact = "Yes")
+                : (significantImpact = "No");
+
+              const tableRow = {
+                projectName,
+                contextID,
+                scientificName,
+                // clientName,
+                looLookupScore,
+                looSurveyScore,
+                indirectImpact,
+                significantImpact,
+                potentialForImpact,
+              };
+
+              reportData.push(tableRow);
+            }
+          }
+        }
+      }
+
+      res.status(200).send({
+        reportData,
+      });
+    } catch (error) {
+      res.status(400).send({ error: error.message });
+    }
+  }
+});
+
 router.put("/update", async (req, res, next) => {
+  console.log("=====>", req.body);
   if (req.body.projectInfo.projectID && req.body.projectInfo.versionID) {
     let projectID = req.body.projectInfo.projectID;
     let versionID = req.body.projectInfo.versionID;
@@ -40,7 +130,7 @@ router.put("/update", async (req, res, next) => {
     } catch (err) {
       res.status(400).send({
         error: `Error:Given Project id ${projectID} in project info doesn't exist`,
-        message: err.message
+        message: err.message,
       });
       return;
     }
@@ -53,13 +143,13 @@ router.put("/update", async (req, res, next) => {
 
       if (versionID != VersionID) {
         res.status(400).send({
-          error: `Error:Given Version id ${versionID} in project info doesn't exist for project id ${projectID}`
+          error: `Error:Given Version id ${versionID} in project info doesn't exist for project id ${projectID}`,
         });
         return;
       }
     } catch (err) {
       res.status(400).send({
-        message: err.message
+        message: err.message,
       });
       return;
     }
@@ -77,7 +167,7 @@ router.put("/update", async (req, res, next) => {
         // joi validation for each species object in list given
         if (error) {
           return res.status(400).send({
-            error: ` Error! For species with id ${impactRow.SpeciesID} given: ${error.message}`
+            error: ` Error! For species with id ${impactRow.SpeciesID} given: ${error.message}`,
           });
         }
 
@@ -86,7 +176,7 @@ router.put("/update", async (req, res, next) => {
 
         if (ID) {
           res.status(400).send({
-            error: `Error:Given Project id ${impactRow.projectID} for species with id ${impactRow.SpeciesID} doesn't exist`
+            error: `Error:Given Project id ${impactRow.projectID} for species with id ${impactRow.SpeciesID} doesn't exist`,
           });
           return;
         }
@@ -98,7 +188,7 @@ router.put("/update", async (req, res, next) => {
 
         if (VersionID) {
           res.status(400).send({
-            error: `Error:Given Version id ${impactRow.VersionID} for species with id ${impactRow.SpeciesID} doesn't exist`
+            error: `Error:Given Version id ${impactRow.VersionID} for species with id ${impactRow.SpeciesID} doesn't exist`,
           });
           return;
         }
@@ -112,16 +202,19 @@ router.put("/update", async (req, res, next) => {
           // check if species id given matches species id in the table for the given row
           if (row.SpeciesID != impactRow.SpeciesID) {
             res.status(400).send({
-              error: `Err: No row with species id ${impactRow.SpeciesID} exists for project id ${impactRow.ProjectID} and version id ${species.VersionID}  in Impact Intensity table.`
+              error: `Err: No row with species id ${impactRow.SpeciesID} exists for project id ${impactRow.ProjectID} and version id ${species.VersionID}  in Impact Intensity table.`,
             });
             return;
           }
         } catch (err) {
+          console.log("------------------------------  from impact: ");
           // No row exists with given ID for impact intensity table
+          console.log("===========", err.message);
           res.status(400).send({ error: err.message });
           return;
         }
       }
+      console.log("+++++++++++++++++++++++++++++++++++  from impact: ");
 
       // update the impact intensity table for the given project, version id
       try {
@@ -130,10 +223,12 @@ router.put("/update", async (req, res, next) => {
           projectID,
           data
         );
-
+        console.log(
+          "################################################################ trying"
+        );
         res.status(200).send({
           data: updated_rows,
-          status: 0 // success
+          status: 0, // success
         });
       } catch (err) {
         res.status(400).send({ error: err.message, status: 1 /* fail */ });
