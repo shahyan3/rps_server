@@ -20,18 +20,18 @@ const LOO = sequelize.define(
     ID: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
-      primaryKey: true
+      primaryKey: true,
     },
     ProjectID: DataTypes.INTEGER,
     VersionID: DataTypes.INTEGER,
     SpeciesID: DataTypes.INTEGER,
     Lookup: DataTypes.INTEGER,
     SurveyAdequacy: DataTypes.INTEGER,
-    ImpactIntensity: DataTypes.INTEGER
+    ImpactIntensity: DataTypes.INTEGER,
   },
   {
     tableName: "LOO",
-    timestamps: false
+    timestamps: false,
   }
 );
 
@@ -39,21 +39,21 @@ const LOO = sequelize.define(
 LOO.belongsTo(Projects, {
   onDelete: "cascade",
   foreignKey: "ProjectID",
-  targetKey: "ID"
+  targetKey: "ID",
 });
 
 // Create foreign keys
 LOO.belongsTo(Versions, {
   onDelete: "cascade",
   foreignKey: "VersionID",
-  targetKey: "VersionID"
+  targetKey: "VersionID",
 });
 
 // Create foreign keys
 LOO.belongsTo(ConsolidatedList, {
   onDelete: "cascade",
   foreignKey: "SpeciesID",
-  targetKey: "SpeciesID"
+  targetKey: "SpeciesID",
 });
 
 // (async () => {
@@ -66,22 +66,16 @@ const looSchema = Joi.object({
   ProjectID: Joi.number().required(),
   VersionID: Joi.number().required(),
   SpeciesID: Joi.number().required(),
-  Lookup: Joi.number()
-    .min(0)
-    .max(3)
-    .required(),
-  SurveyAdequacy: Joi.number()
-    .min(0)
-    .max(4)
-    .required(),
-  ImpactIntensity: Joi.number()
+  Lookup: Joi.number().min(0).max(6).required(),
+  SurveyAdequacy: Joi.number().min(0).max(4).required(),
+  ImpactIntensity: Joi.number() // not really being used.
     .min(0)
     .max(6)
-    .required()
+    .required(),
 });
 
 module.exports = {
   LOO,
   sequelize,
-  looSchema
+  looSchema,
 };

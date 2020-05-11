@@ -9,6 +9,11 @@ var BaseDataService = require("../services/BaseDataService");
 
 var { impactIntensitySchema } = require("../models/ImpactIntensityModel");
 
+// significant impact constants
+const NO = 0;
+const POSSIBLE = 1;
+const LIKELY = 2;
+
 // Send the impact intensity for the project and version given
 router.post("/", async (req, res, next) => {
   if (req.body.data.projectID && req.body.data.versionID) {
@@ -54,9 +59,13 @@ router.post("/report", async (req, res, next) => {
         versionID
       );
 
+      console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
       // for every impact row
       for (var i = 0; i < impactList.length; i++) {
         let speciesID = impactList[i].SpeciesID;
+
+        console.log("SSSSSSSSSSSSSSSSSSSSSSSSSSSSS speciedID", speciesID);
         // find species data in base data table
         let baseDataSpecies = await BaseDataService.getSpeciesById(speciesID);
 
@@ -64,14 +73,27 @@ router.post("/report", async (req, res, next) => {
           // create species object from one table row in report
           let scientificName = baseDataSpecies.ScientificName;
           let projectName = project.Name;
-          // let clientName = project.Client
-          let contextID = project.ContextID;
+          let companyName = project.CompanyName;
+          let context = project.Context;
+          let deadline = project.Deadline;
 
-          for (var i = 0; i < looList.length; i++) {
-            if (looList[i].SpeciesID == impactList[i].SpeciesID) {
-              const species = looList[i];
+          for (var j = 0; j < looList.length; j++) {
+            console.log("$$$$$$$$$$$$$ lOO lOOP count =>>", j);
+            if (looList[j].SpeciesID == impactList[i].SpeciesID) {
+              const species = looList[j];
               const impactRow = impactList[i];
 
+              console.log(
+                "########################### Loo species == Impact species",
+                species.SpeciesID,
+                impactRow.SpeciesID
+              );
+
+              console.log(
+                "===> MATCHED SPECIES loo and impact",
+                species.dataValues,
+                impactRow.dataValues
+              );
               // get data from loo for match impact and loo table species
               let looLookupScore = species.Lookup;
               let looSurveyScore = species.SurveyAdequacy;
@@ -81,21 +103,35 @@ router.post("/report", async (req, res, next) => {
 
               impactRow.IndirectImpact
                 ? (indirectImpact = "Yes")
-                : (significantImpact = "No");
+                : (indirectImpact = "No");
 
-              impactRow.SignificantImpact
-                ? (significantImpact = "Yes")
-                : (significantImpact = "No");
+              if (impactRow.SignificantImpact) {
+                if (impactRow.SignificantImpact == NO) {
+                  significantImpact = "NO";
+                }
+                if (impactRow.SignificantImpact == POSSIBLE) {
+                  significantImpact = "POSSIBLE";
+                }
+
+                if (impactRow.SignificantImpact == LIKELY) {
+                  significantImpact = "LIKELY";
+                }
+              }
+
+              // impactRow.SignificantImpact &&
+              //   ? (significantImpact = "Yes")
+              //   : (significantImpact = "No");
 
               impactRow.PotentialForImpact
                 ? (potentialForImpact = "Yes")
-                : (significantImpact = "No");
+                : (potentialForImpact = "No");
 
-              const tableRow = {
+              var tableRow = {
                 projectName,
-                contextID,
                 scientificName,
-                // clientName,
+                companyName,
+                context,
+                deadline,
                 looLookupScore,
                 looSurveyScore,
                 indirectImpact,
@@ -108,6 +144,8 @@ router.post("/report", async (req, res, next) => {
           }
         }
       }
+
+      console.log("+++++++++++++++++++>>>>>>>> ", reportData);
 
       res.status(200).send({
         reportData,
@@ -231,6 +269,7 @@ router.put("/update", async (req, res, next) => {
           status: 0, // success
         });
       } catch (err) {
+        console.log("## erorrrr", err.message);
         res.status(400).send({ error: err.message, status: 1 /* fail */ });
       }
     }

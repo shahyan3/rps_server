@@ -22,10 +22,10 @@ var app = express();
 // ensure the jwt key is set in the environment variable for the app.
 // this key defined by environment variable brat_jwtPrivateKey is used in auth.js route jwt.sign(),
 // to sign the jwt token against a "key" - created on the server side, checked below
-if (!config.get("jwtPrivateKey")) {
-  console.error("FATAL ERROR: jwtPrivateKey is not defined");
-  process.exit(1); // 0 is success, anthing is fail
-}
+// if (!config.get("jwtPrivateKey")) {
+//   console.error("FATAL ERROR: jwtPrivateKey is not defined");
+//   process.exit(1); // 0 is success, anthing is fail
+// }
 
 app.use(logger("dev"));
 app.use(express.json());

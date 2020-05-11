@@ -25,6 +25,71 @@ class ProjectService {
     const project = await Projects.findOne({ where: { Name: name } });
     return project;
   }
+
+  static parseContextID(id) {
+    switch (id) {
+      case 1:
+        return "SSD Major Project";
+      case 2:
+        return "Part 4 Local Development";
+      case 3:
+        return "Part 5 Development";
+      case 4:
+        return "Mining SEPP";
+      case 5:
+        return "ISEPP 2007";
+      case 6:
+        return "SSI Major project";
+      case 7:
+        return "Complying Development";
+      case 8:
+        return "BDAR Waiver";
+      case 9:
+        return "CommonWealth";
+    }
+  }
+
+  static parseRegionID(id) {
+    switch (id) {
+      case 1:
+        return "Australian Alps";
+      case 2:
+        return "Brigalow Belt South";
+      case 3:
+        return "Broken Hill Complex";
+      case 4:
+        return "Channel Country";
+      case 5:
+        return "Cobar Peneplain";
+      case 6:
+        return "Darling Riverine Plains";
+      case 7:
+        return "Mulga Lands";
+      case 8:
+        return "Murray Darling Depression";
+      case 9:
+        return "Mulga Lands";
+      case 10:
+        return "Nandewar";
+      case 11:
+        return "New England Tableland";
+      case 12:
+        return "North Coast";
+      case 13:
+        return "South Western Slopes";
+      case 14:
+        return "Riverina";
+      case 15:
+        return "Simpson-Strzelecki Dunefields";
+      case 16:
+        return "South East Corner";
+      case 17:
+        return "South Eastern Highlands";
+      case 18:
+        return "Sydney Basin";
+    }
+  }
+
   static async saveProject(project) {
     let versionBuilt;
 
@@ -53,25 +118,23 @@ class ProjectService {
 
     // save project
     const projectBuilt = Projects.build({
-      // CompanyID: project.CompanyID,
-      CompanyID: ID,
       Name: project.Name,
-      ContextID: project.ContextID,
-      Latitude: project.Latitude,
-      Longitude: project.Longitude,
-      StateID: project.StateID,
-      RegionID: project.RegionID,
-      RadiusCovered: project.RadiusCovered,
-      Deadline: project.Deadline,
+      RPSProjectID: project.RPSProjectID,
+      CompanyName: project.CompanyName,
+      Context: this.parseContextID(project.ContextID),
+      Region: this.parseRegionID(project.RegionID),
       CommonWealth: project.CommonWealth,
       ProjectStatus: project.ProjectStatus,
-      ProjectSection: project.ProjectSection,
+      Deadline: project.Deadline,
+      RadiusCovered: project.RadiusCovered,
+      Latitude: project.Latitude,
+      Longitude: project.Longitude,
     });
 
     let savedProject = await projectBuilt.save();
     console.log("\n Project Saved to database!\n\n");
 
-    // create a version (meta-data) for the (comes from frontend later on?)
+    // create a version (meta-data) for the (comes from frontend later on?) #TODO
     const versionData = {
       ProjectID: projectBuilt.ID,
       LastEdited: new Date(),

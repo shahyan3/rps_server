@@ -9,11 +9,14 @@ const { Projects } = require("../models/ProjectModel");
 const VersionsService = require("../services/VersionsService");
 const BaseDataService = require("../services/BaseDataService");
 
-// Figure out how to create foriegn key relations using sequilize and do queries to test
 class ConsolidatedListService {
-  static async getSAIIForSpecies(speciesID) {
+  static async getSAIIForSpecies(speciesID, projectID, versionID) {
     const species = await ConsolidatedList.findOne({
-      where: { SpeciesID: speciesID },
+      where: {
+        ProjectID: projectID,
+        VersionID: versionID,
+        SpeciesID: speciesID,
+      },
     });
 
     return species;
@@ -45,14 +48,11 @@ class ConsolidatedListService {
   static async save(selectedSpecies, projectID) {
     console.log("in save function: project id>", projectID);
     // save data to conslidated list table
-    console.log("what is send::::", selectedSpecies);
+    // console.log("what is send::::", selectedSpecies);
 
     // Get the "Version data" from Version table with reference to this project
     const versionData = await VersionsService.getVersionByProjectId(projectID);
     // console.log("VERSION ----===>", versionData);
-
-    // update by deleting previous list is exists (removes duplicate saved of same list)
-    await ConsolidatedListService.deleteList(projectID, versionData.VersionID);
 
     // save data to ConsolidatedList data table
     for (var i = 0; i < selectedSpecies.length; i++) {
@@ -69,6 +69,14 @@ class ConsolidatedListService {
         // if species is not in base data table
         throw err;
       }
+
+      // #TODO delet all species one at a time from the records as they are updated.
+      // in version 2 - only delete species if they exist in database AND been updated
+      await ConsolidatedListService.deleteOne(
+        projectID,
+        versionData.VersionID,
+        species_selected.SpeciesID
+      );
 
       // SPECIES FOUND IN BASE DATA at this point - save all the species in the ConsolidatedList into table
       const consolidatedList = ConsolidatedList.build({
@@ -99,6 +107,18 @@ class ConsolidatedListService {
     await ConsolidatedList.destroy({
       where: { ProjectID: projectID, VersionID: versionID },
     });
+  }
+
+  static async deleteOne(projectID, versionID, speciesID) {
+    let flag = await ConsolidatedList.destroy({
+      where: {
+        ProjectID: projectID,
+        VersionID: versionID,
+        SpeciesID: speciesID,
+      },
+    });
+
+    return flag;
   }
 }
 

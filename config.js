@@ -12,7 +12,7 @@ const { Sequelize, Model, DataTypes } = require("sequelize");
 //   },
 // });
 
-// // Development
+// Development;
 var sequelize = new Sequelize("rps_2020_test", "root", "password", {
   host: "localhost",
   dialect: "mysql",

@@ -134,18 +134,33 @@ class ImpactIntensityService {
     }
   }
 
-  static async saveConsolidatedList(looSavedSpeciesList) {
+  static async deleteList(projectID, versionID) {
+    await ImpactIntensity.destroy({
+      where: {
+        ProjectID: projectID,
+        VersionID: versionID,
+      },
+    });
+  }
+
+  static async saveConsolidatedList(looSavedSpeciesList, projectID, versionID) {
     // save list to impact intensity table
     let savedImpactIntensity;
     let lookupScore;
     let impactPotentialFlag = false;
 
+    // ###
+    // update by deleting species previously saved in table (removes duplicate saved of same list)
+    await ImpactIntensityService.deleteList(projectID, versionID);
+
     for (var i = 0; i < looSavedSpeciesList.length; i++) {
       let species = looSavedSpeciesList[i];
       let speciesID = species.SpeciesID;
+
       let speciesLookup = species.Lookup;
       let lowScore = 1; // look up score // make it a constant LOWSCORE and true false as YES and NO constants below.
 
+      // update potential for impact
       // get lookup score of species, if <=1 potetial for impact flag is false
       if (speciesLookup <= lowScore) {
         impactPotentialFlag = false;
@@ -154,9 +169,11 @@ class ImpactIntensityService {
         impactPotentialFlag = true;
       }
 
-      // get SAII for species from consolidated list
+      // get SAII for species from consolidated list for a given project and version id!
       const { SAII } = await ConsolidatedListService.getSAIIForSpecies(
-        speciesID
+        speciesID,
+        species.ProjectID,
+        species.VersionID
       );
       // if saii is true, impact potential is true (even if lookup is <=1)
       if (SAII) {
@@ -176,7 +193,9 @@ class ImpactIntensityService {
 
     console.log("\n Initial Impact Intesity saved to database!\n\n");
 
-    return { data: savedImpactIntensity };
+    return {
+      data: savedImpactIntensity,
+    };
   }
 }
 

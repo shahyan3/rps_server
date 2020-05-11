@@ -24,6 +24,11 @@ router.post("/", async (req, res, next) => {
           projectID,
           versionID
         );
+
+        // #TODO like impact: save the initial loo list in loo after consolidated list
+        // so that if consolidated list is updated I am NOT deleting all the values from LOO only the updated ones.!!!
+        // return the looSpecies instead of baseData list in the  getConsolidatedSpecies() fix it.!!!
+        // ########################
         res.status(200).send({ looSpeciesList: looSpeciesList });
       } catch (err) {
         // no species found with version project id
@@ -53,7 +58,7 @@ router.post("/saveLooAnalysis", async (req, res, next) => {
       if (versionExist == 1) {
         return res.status(400).send({
           error:
-            "version id given is not found in database that matches the given project id!"
+            "version id given is not found in database that matches the given project id!",
         });
       }
 
@@ -62,7 +67,7 @@ router.post("/saveLooAnalysis", async (req, res, next) => {
         // test 1) each species sent back has the correct project and version id
         if ((await checkProjectExists(looSpecies[i].ProjectID)) == 1) {
           return res.status(400).send({
-            error: `Sent species with ID ${looSpecies[i].SpeciesID} has invalid project id ${looSpecies[i].ProjectID} (not found in db)`
+            error: `Sent species with ID ${looSpecies[i].SpeciesID} has invalid project id ${looSpecies[i].ProjectID} (not found in db)`,
           });
         }
 
@@ -70,10 +75,9 @@ router.post("/saveLooAnalysis", async (req, res, next) => {
           (await checkVersionExists(projectID, looSpecies[i].VersionID)) == 1
         ) {
           return res.status(400).send({
-            error: `Sent species with ID ${looSpecies[i].SpeciesID} has invalid version id ${looSpecies[i].VersionID} (not found in db)`
+            error: `Sent species with ID ${looSpecies[i].SpeciesID} has invalid version id ${looSpecies[i].VersionID} (not found in db)`,
           });
         }
-        // test 2) joi
 
         // #TODO DEFAULT: ImpactIntensity added ## do we need in LOO?
         looSpecies[i].ImpactIntensity = 5;
