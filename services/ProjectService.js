@@ -16,8 +16,88 @@ class ProjectService {
     });
   }
 
+  static parseContextTEXT(text) {
+    switch (text) {
+      case "SSD Major Project":
+        return 1;
+      case "Part 4 Local Development":
+        return 2;
+      case "Part 5 Development":
+        return 3;
+      case "Mining SEPP":
+        return 4;
+      case "ISEPP 2007":
+        return 5;
+      case "SSI Major project":
+        return 6;
+      case "Complying Development":
+        return 7;
+      case "BDAR Waiver":
+        return 8;
+      case "CommonWealth":
+        return 9;
+    }
+  }
+  static parseRegionTEXT(text) {
+    switch (text) {
+      case "Australian Alps":
+        return 1;
+      case "Brigalow Belt South":
+        return 2;
+      case "Broken Hill Complex":
+        return 3;
+      case "Channel Country":
+        return 4;
+      case "Cobar Peneplain":
+        return 5;
+      case "Darling Riverine Plains":
+        return 6;
+      case "Mulga Lands":
+        return 7;
+      case "Murray Darling Depression":
+        return 8;
+      case "Mulga Lands":
+        return 9;
+      case "Nandewar":
+        return 10;
+      case "New England Tableland":
+        return 11;
+      case "North Coast":
+        return 12;
+      case "South Western Slopes":
+        return 13;
+      case "Riverina":
+        return 14;
+      case "Simpson-Strzelecki Dunefields":
+        return 15;
+      case "South East Corner":
+        return 16;
+      case "South Eastern Highlands":
+        return 17;
+      case "Sydney Basin":
+        return 18;
+    }
+
+    return null;
+  }
+
   static async getProjectByID(id) {
-    const project = await Projects.findOne({ where: { ID: id } });
+    let project = await Projects.findOne({ where: { ID: id } });
+
+    if (project) {
+      let regionIDToText = this.parseRegionTEXT(project.Region);
+      let contextIDToText = this.parseContextTEXT(project.Context);
+      console.log("}}}}}}}}}}}}}}}}}}}}}}", regionIDToText);
+      console.log("}}}}}}}}}}}}}}}}}}}}}}", project.dataValues.CommonWealth);
+
+      project.dataValues.Region = regionIDToText;
+      project.dataValues.Context = contextIDToText;
+
+      return project;
+    }
+  }
+  static async getProjectBy_RPSProjectID(rpsID) {
+    let project = await Projects.findOne({ where: { RPSProjectID: rpsID } });
     return project;
   }
 
@@ -93,64 +173,135 @@ class ProjectService {
   static async saveProject(project) {
     let versionBuilt;
 
-    let checkProject = await this.getProjectByName(project.Name);
-    if (checkProject != null && checkProject.Name) {
-      throw new Error("Error! Project with given name exists in database");
-    }
-
-    // check client's company exists in the db
-    const company = await Companies.findOne({
-      where: { Name: project.CompanyName },
-    });
-
-    if (!company) {
-      // client company doesn't exist - register it and create user for it
-      const newCompanyBuilt = await Companies.build({
-        Name: project.CompanyName,
+    let projectExist = await this.getProjectBy_RPSProjectID(
+      project.RPSProjectID
+    );
+    /* 1) IF existing project is updated by user (update fields) in database */
+    console.log("+++++++++++++++++ RPS id", project.RPSProjectID);
+    if (projectExist != null) {
+      // check client's company exists in the db
+      const company = await Companies.findOne({
+        where: {
+          Name: project.CompanyName,
+        },
       });
-      await newCompanyBuilt.save();
+
+      if (!company) {
+        // client company doesn't exist - register it and create user for it
+        const newCompanyBuilt = await Companies.build({
+          Name: project.CompanyName,
+        });
+        await newCompanyBuilt.save();
+      }
+
+      // get company id from db
+      const { ID } = await Companies.findOne({
+        where: {
+          Name: project.CompanyName,
+        },
+      });
+
+      // update existing project (BUT DON'T update the RPSProjectID)
+      if (projectExist) {
+        projectExist.update({
+          Name: project.Name,
+          CompanyName: project.CompanyName,
+          Context: this.parseContextID(project.ContextID),
+          Region: this.parseRegionID(project.RegionID),
+          CommonWealth: project.CommonWealth,
+          ProjectStatus: project.ProjectStatus,
+          Deadline: project.Deadline,
+          RadiusCovered: project.RadiusCovered,
+          Latitude: project.Latitude,
+          Longitude: project.Longitude,
+        });
+
+        var savedExistingProject = await projectExist.save();
+
+        if (savedExistingProject) {
+          console.log("\n Project Updated in database!\n\n");
+
+          // get version for existing project
+          let versionData = await VersionsService.getVersionByProjectId(
+            projectExist.ID
+          );
+
+          // get updated project entry from database
+          let updatedProjectEntry = await this.getProjectByID(projectExist.ID);
+          // console.log("version data ===>", versionData.dataValues);
+
+          return {
+            // return existing version meta and project objects to client
+            project: updatedProjectEntry,
+            version: versionData,
+          };
+        }
+      }
+    } else {
+      /* 2. Create a new project in database (since project doesn't exists) */
+
+      // check client's company exists in the db
+      const company = await Companies.findOne({
+        where: { Name: project.CompanyName },
+      });
+
+      if (!company) {
+        // client company doesn't exist - register it and create user for it
+        const newCompanyBuilt = await Companies.build({
+          Name: project.CompanyName,
+        });
+        await newCompanyBuilt.save();
+      }
+
+      // get company id from db
+      const { ID } = await Companies.findOne({
+        where: { Name: project.CompanyName },
+      });
+
+      // save project
+      const projectBuilt = Projects.build({
+        Name: project.Name,
+        RPSProjectID: project.RPSProjectID,
+        CompanyName: project.CompanyName,
+        Context: this.parseContextID(project.ContextID),
+        Region: this.parseRegionID(project.RegionID),
+        CommonWealth: project.CommonWealth,
+        ProjectStatus: project.ProjectStatus,
+        Deadline: project.Deadline,
+        RadiusCovered: project.RadiusCovered,
+        Latitude: project.Latitude,
+        Longitude: project.Longitude,
+      });
+
+      let savedProject = await projectBuilt.save();
+      console.log("\n Project Saved to database!\n\n");
+
+      // create a version (meta-data) for the (comes from frontend later on?) #TODO
+      const versionData = {
+        ProjectID: projectBuilt.ID,
+        LastEdited: new Date(),
+        EditedBy: "John Doe", // #TODO when user system is implemented.
+        Progress: "Incomplete",
+        LastReviewed: new Date(),
+        ReviewedBy: "Mark T",
+        Created: new Date(),
+        CreatedBy: "Joe Doe",
+      };
+
+      if (savedProject) {
+        versionBuilt = await VersionsService.saveVersion(versionData);
+
+        // get newly entry of version for existing project from database
+        let versionData = await VersionsService.getVersionByProjectId(
+          savedProject.ID
+        );
+
+        return {
+          project: projectBuilt,
+          version: versionData,
+        };
+      }
     }
-
-    // get company id from db
-    const { ID } = await Companies.findOne({
-      where: { Name: project.CompanyName },
-    });
-
-    // save project
-    const projectBuilt = Projects.build({
-      Name: project.Name,
-      RPSProjectID: project.RPSProjectID,
-      CompanyName: project.CompanyName,
-      Context: this.parseContextID(project.ContextID),
-      Region: this.parseRegionID(project.RegionID),
-      CommonWealth: project.CommonWealth,
-      ProjectStatus: project.ProjectStatus,
-      Deadline: project.Deadline,
-      RadiusCovered: project.RadiusCovered,
-      Latitude: project.Latitude,
-      Longitude: project.Longitude,
-    });
-
-    let savedProject = await projectBuilt.save();
-    console.log("\n Project Saved to database!\n\n");
-
-    // create a version (meta-data) for the (comes from frontend later on?) #TODO
-    const versionData = {
-      ProjectID: projectBuilt.ID,
-      LastEdited: new Date(),
-      EditedBy: "John Doe", // #TODO when user system is implemented.
-      Progress: "Incomplete",
-      LastReviewed: new Date(),
-      ReviewedBy: "Mark T",
-      Created: new Date(),
-      CreatedBy: "Joe Doe",
-    };
-
-    if (savedProject) {
-      versionBuilt = await VersionsService.saveVersion(versionData);
-    }
-
-    return { project: projectBuilt, version: versionBuilt };
   }
 }
 
