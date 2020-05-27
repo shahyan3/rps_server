@@ -1,6 +1,8 @@
 var express = require("express");
 var router = express.Router();
 var ProjectService = require("../services/ProjectService");
+var VersionService = require("../services/VersionsService");
+
 const { projectSchema } = require("../models/ProjectModel");
 
 router.get("/project", async (req, res, next) => {
@@ -21,12 +23,31 @@ router.get("/project", async (req, res, next) => {
 router.get("/", async (req, res, next) => {
   const projects = await ProjectService.getAllProjects();
 
-  if (projects) {
-    res.status(200).send({ all: projects });
-    // res.json({ all: projects });
-  } else {
-    res.status(404).send({ message: "No projects found in database!" });
+  let payload = [];
+
+  try {
+    // add version id for each project in the payload to client
+    for (i = 0; i < projects.length; i++) {
+      let proj = projects[i].dataValues;
+
+      let version = await VersionService.getVersionByProjectId(proj.ID);
+
+      if (version) {
+        proj.version = version;
+
+        payload.push(proj);
+      }
+    }
+
+    if (payload.length > 0) {
+      res.status(200).send({ all: payload });
+      // res.json({ all: projects });
+    }
+  } catch (err) {
+    res.status(404).send({ message: err.message });
   }
+
+  // res.status(404).send({ message: "No projects found in database!" });
 });
 
 router.post("/", async (req, res, next) => {

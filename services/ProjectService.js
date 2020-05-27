@@ -277,19 +277,28 @@ class ProjectService {
       console.log("\n Project Saved to database!\n\n");
 
       // create a version (meta-data) for the (comes from frontend later on?) #TODO
-      const versionData = {
-        ProjectID: projectBuilt.ID,
-        LastEdited: new Date(),
-        EditedBy: "John Doe", // #TODO when user system is implemented.
-        Progress: "Incomplete",
-        LastReviewed: new Date(),
-        ReviewedBy: "Mark T",
-        Created: new Date(),
-        CreatedBy: "Joe Doe",
-      };
+      // const versionData = {
+      //   ProjectID: projectBuilt.ID,
+      //   LastEdited: new Date(),
+      //   EditedBy: "John Doe", // #TODO when user system is implemented.
+      //   Progress: "Incomplete",
+      //   LastReviewed: new Date(),
+      //   ReviewedBy: "Mark T",
+      //   Created: new Date(),
+      //   CreatedBy: "Joe Doe",
+      // };
 
       if (savedProject) {
-        versionBuilt = await VersionsService.saveVersion(versionData);
+        versionBuilt = await VersionsService.saveVersion({
+          ProjectID: projectBuilt.ID,
+          LastEdited: new Date(),
+          EditedBy: "John Doe", // #TODO when user system is implemented.
+          Progress: "Incomplete",
+          LastReviewed: new Date(),
+          ReviewedBy: "Mark T",
+          Created: new Date(),
+          CreatedBy: "Joe Doe",
+        });
 
         // get newly entry of version for existing project from database
         let versionData = await VersionsService.getVersionByProjectId(
