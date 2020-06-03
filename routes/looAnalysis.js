@@ -12,6 +12,11 @@ router.get("/", async (req, res, next) => {
   res.status(200).send("GET: Loo Analysis");
 });
 
+/*
+  Endpoint /api/looAnalysis
+  @req.body versionID and projectID
+  @return  array of loo species object for a given version and project id 
+*/
 router.post("/", async (req, res, next) => {
   if (req.body) {
     if (req.body.projectID && req.body.versionID) {
@@ -25,10 +30,6 @@ router.post("/", async (req, res, next) => {
           versionID
         );
 
-        // #TODO like impact: save the initial loo list in loo after consolidated list
-        // so that if consolidated list is updated I am NOT deleting all the values from LOO only the updated ones.!!!
-        // return the looSpecies instead of baseData list in the  getConsolidatedSpecies() fix it.!!!
-        // ########################
         res.status(200).send({ looSpeciesList: looSpeciesList });
       } catch (err) {
         // no species found with version project id
@@ -38,6 +39,11 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+/*
+  Endpoint /api/looAnalysis/saveLooAnalysis
+  @req.body looSpecies (array of loo species to be saved), versionID and projectID
+  @return  success or error message for saved entry to database 
+*/
 router.post("/saveLooAnalysis", async (req, res, next) => {
   if (req.body) {
     if (req.body.looSpecies && req.body.projectID && req.body.versionID) {
@@ -79,7 +85,7 @@ router.post("/saveLooAnalysis", async (req, res, next) => {
           });
         }
 
-        // #TODO DEFAULT: ImpactIntensity added ## do we need in LOO?
+        // #TODO ImpactIntensity added (hard coded 5 as placeholder, there is no use of this field in the current app version)
         looSpecies[i].ImpactIntensity = 5;
         // validate
         const { error } = looSchema.validate(looSpecies[i]);
@@ -102,7 +108,6 @@ router.post("/saveLooAnalysis", async (req, res, next) => {
           .status(200)
           .send({ message: "Successfully saved species.", status: result });
       } catch (err) {
-        console.log("failed to save%%%%");
         // no species found with given version id and project id
         res.status(400).send({ err: err.message });
       }

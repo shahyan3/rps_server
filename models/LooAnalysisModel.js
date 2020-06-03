@@ -7,13 +7,6 @@ const { ConsolidatedList } = require("../models/ConsolidatedListModel");
 
 const sequelize = require("../config");
 
-// const sequelize = new Sequelize("rps_2020_test", "root", "password", {
-//   dialect: "mysql",
-//   dialectOptions: {
-//     // Your mysql2 options here
-//   }
-// });
-
 const LOO = sequelize.define(
   "LOO",
   {

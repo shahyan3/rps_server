@@ -14,12 +14,17 @@ const NO = 0;
 const POSSIBLE = 1;
 const LIKELY = 2;
 
-// Send the impact intensity for the project and version given
+/*
+  Endpoint /api/impactIntensity
+  @req.body versionID and projectID
+  @return  array of impact intensity rows in database for a given version and project id 
+*/
 router.post("/", async (req, res, next) => {
   if (req.body.data.projectID && req.body.data.versionID) {
     let projectID = req.body.data.projectID;
     let versionID = req.body.data.versionID;
 
+    // find impact intensity rows for a given project and version id to return to client
     try {
       const getImpactIntesitySpecies = await ImpactIntensityService.getImpactIntensityByIdExcludeSignificantImpact(
         projectID,
@@ -37,7 +42,11 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-// get report data from impact intensity for given project/version id
+/*
+  Endpoint /api/impactIntensity
+  @req.body versionID and projectID and data (arrays of species object with user given scores)
+  @return  impact intensity report data generated for a given version and project id 
+*/
 router.post("/report", async (req, res, next) => {
   if (req.body.projectID && req.body.versionID) {
     const projectID = req.body.projectID;
@@ -59,13 +68,10 @@ router.post("/report", async (req, res, next) => {
         versionID
       );
 
-      console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-
       // for every impact row
       for (var i = 0; i < impactList.length; i++) {
         let speciesID = impactList[i].SpeciesID;
 
-        console.log("SSSSSSSSSSSSSSSSSSSSSSSSSSSSS speciedID", speciesID);
         // find species data in base data table
         let baseDataSpecies = await BaseDataService.getSpeciesById(speciesID);
 
@@ -78,22 +84,10 @@ router.post("/report", async (req, res, next) => {
           let deadline = project.Deadline;
 
           for (var j = 0; j < looList.length; j++) {
-            console.log("$$$$$$$$$$$$$ lOO lOOP count =>>", j);
             if (looList[j].SpeciesID == impactList[i].SpeciesID) {
               const species = looList[j];
               const impactRow = impactList[i];
 
-              console.log(
-                "########################### Loo species == Impact species",
-                species.SpeciesID,
-                impactRow.SpeciesID
-              );
-
-              console.log(
-                "===> MATCHED SPECIES loo and impact",
-                species.dataValues,
-                impactRow.dataValues
-              );
               // get data from loo for match impact and loo table species
               let looLookupScore = species.Lookup;
               let looSurveyScore = species.SurveyAdequacy;
@@ -118,10 +112,6 @@ router.post("/report", async (req, res, next) => {
                 }
               }
 
-              // impactRow.SignificantImpact &&
-              //   ? (significantImpact = "Yes")
-              //   : (significantImpact = "No");
-
               impactRow.PotentialForImpact
                 ? (potentialForImpact = "Yes")
                 : (potentialForImpact = "No");
@@ -145,8 +135,6 @@ router.post("/report", async (req, res, next) => {
         }
       }
 
-      console.log("+++++++++++++++++++>>>>>>>> ", reportData);
-
       res.status(200).send({
         reportData,
       });
@@ -155,9 +143,12 @@ router.post("/report", async (req, res, next) => {
     }
   }
 });
-
+/*
+  Endpoint /api/impactIntensity/update
+  @req.body versionID and projectID
+  @return  returns impact rows for given version and project id (with the user inputted scores now filled)
+*/
 router.put("/update", async (req, res, next) => {
-  console.log("=====>", req.body);
   if (req.body.projectInfo.projectID && req.body.projectInfo.versionID) {
     let projectID = req.body.projectInfo.projectID;
     let versionID = req.body.projectInfo.versionID;
@@ -245,14 +236,12 @@ router.put("/update", async (req, res, next) => {
             return;
           }
         } catch (err) {
-          console.log("------------------------------  from impact: ");
           // No row exists with given ID for impact intensity table
           console.log("===========", err.message);
           res.status(400).send({ error: err.message });
           return;
         }
       }
-      console.log("+++++++++++++++++++++++++++++++++++  from impact: ");
 
       // update the impact intensity table for the given project, version id
       try {
@@ -261,15 +250,12 @@ router.put("/update", async (req, res, next) => {
           projectID,
           data
         );
-        console.log(
-          "################################################################ trying"
-        );
+
         res.status(200).send({
           data: updated_rows,
           status: 0, // success
         });
       } catch (err) {
-        console.log("## erorrrr", err.message);
         res.status(400).send({ error: err.message, status: 1 /* fail */ });
       }
     }

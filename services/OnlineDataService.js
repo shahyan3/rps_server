@@ -1,3 +1,7 @@
+/*
+    Unused class so far.
+*/
+
 // const { OnlineData, sequelize } = require("../models/OnlineDataModel");
 
 // class OnlineDataService {

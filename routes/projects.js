@@ -2,11 +2,14 @@ var express = require("express");
 var router = express.Router();
 var ProjectService = require("../services/ProjectService");
 var VersionService = require("../services/VersionsService");
-
 const { projectSchema } = require("../models/ProjectModel");
 
+/*
+  Endpoint /api/projects/project?=projectId= 
+  @param projectId
+  @return project object for given project id 
+*/
 router.get("/project", async (req, res, next) => {
-  console.log("++++++++++ query project id is ", req.query.projectId);
   if (req.query.projectId) {
     let id = req.query.projectId;
     const project = await ProjectService.getProjectByID(id);
@@ -19,7 +22,10 @@ router.get("/project", async (req, res, next) => {
     }
   }
 });
-
+/*
+  Endpoint /api/projects 
+  @return all projects in database 
+*/
 router.get("/", async (req, res, next) => {
   const projects = await ProjectService.getAllProjects();
 
@@ -41,15 +47,16 @@ router.get("/", async (req, res, next) => {
 
     if (payload.length > 0) {
       res.status(200).send({ all: payload });
-      // res.json({ all: projects });
     }
   } catch (err) {
     res.status(404).send({ message: err.message });
   }
-
-  // res.status(404).send({ message: "No projects found in database!" });
 });
-
+/*
+  Endpoint /api/projects
+  @request {project} entry object
+  @return saved project object and version object for given project id 
+*/
 router.post("/", async (req, res, next) => {
   if (req.body) {
     // validate request

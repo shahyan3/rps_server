@@ -1,15 +1,18 @@
+/*
+  ConsolidatedListService class implements methods to interface with the ConsolidatedList table in the database
+*/
+
 const {
   ConsolidatedList,
   sequelize,
 } = require("../models/ConsolidatedListModel");
 
 const { Projects } = require("../models/ProjectModel");
-
-// const OnlineDataService = require("../services/OnlineDataService");
 const VersionsService = require("../services/VersionsService");
 const BaseDataService = require("../services/BaseDataService");
 
 class ConsolidatedListService {
+  // given species id, project id and version id returns species from ConsolidatedList table
   static async getSAIIForSpecies(speciesID, projectID, versionID) {
     const species = await ConsolidatedList.findOne({
       where: {
@@ -22,6 +25,7 @@ class ConsolidatedListService {
     return species;
   }
 
+  // given project and version id returns consolidated list of species
   static async getConsolidatedListByProjectVersionID(project_id, version_id) {
     const list = await ConsolidatedList.findAll({
       where: { ProjectID: project_id, VersionID: version_id },
@@ -29,7 +33,8 @@ class ConsolidatedListService {
     return list;
   }
 
-  // not using atm.
+  // returns consolidated list of species rows the ConsolidatedList table and the project row from the Project table
+  // that matches the species
   static async getListByProjectAssociation() {
     const list = await ConsolidatedList.findAll({
       attributes: ["ID", "ProjectID", "EPBC", "BAM", "ATLAS"],
@@ -45,16 +50,13 @@ class ConsolidatedListService {
     return list;
   }
 
+  // given array of species and project id, INSERTS species into ConsolidatedList table as new entries
+  // returns consolidated list of species from the table
   static async save(selectedSpecies, projectID) {
-    console.log("in save function: project id>", projectID);
-    // save data to conslidated list table
-    // console.log("what is send::::", selectedSpecies);
-
     // Get the "Version data" from Version table with reference to this project
     const versionData = await VersionsService.getVersionByProjectId(projectID);
-    // console.log("VERSION ----===>", versionData);
 
-    // save data to ConsolidatedList data table
+    // save species to ConsolidatedList data table
     for (var i = 0; i < selectedSpecies.length; i++) {
       // search species in Base data model and check
       const species_selected = selectedSpecies[i];
@@ -70,8 +72,9 @@ class ConsolidatedListService {
         throw err;
       }
 
-      // #TODO delet all species one at a time from the records as they are updated.
-      // in version 2 - only delete species if they exist in database AND been updated
+      // #TODO (for version 2 of application): delete all species one at a time from the records as they are updated.
+      // the current implementation deletes all the rows in the ConsolidatedList table for a given project and version id
+      // when it is updates
       await ConsolidatedListService.deleteOne(
         projectID,
         versionData.VersionID,
@@ -103,12 +106,13 @@ class ConsolidatedListService {
     return consolidatedSpeciesList;
   }
 
+  // deletes all species rows in the table where the project and version ids match
   static async deleteList(projectID, versionID) {
     await ConsolidatedList.destroy({
       where: { ProjectID: projectID, VersionID: versionID },
     });
   }
-
+  // delete one species row in the table where the project, version id and species id match
   static async deleteOne(projectID, versionID, speciesID) {
     let flag = await ConsolidatedList.destroy({
       where: {

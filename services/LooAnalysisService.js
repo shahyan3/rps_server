@@ -1,3 +1,7 @@
+/*
+  LooAnalysisService class implements methods to interface with the LOO table in the database
+*/
+
 const { LOO } = require("../models/LooAnalysisModel");
 const ImpactIntensityService = require("../services/ImpactIntensityService");
 
@@ -5,28 +9,25 @@ const ConsolidatedListService = require("../services/ConsolidatedListService");
 const BaseDataService = require("../services/BaseDataService");
 
 class LooAnalysisService {
-  // returns all the species info (from base) that is in a particular consolidated list
+  // returns all the species list that is in a ConsolidatedList table for given project, version ids
   static async getConsolidatedSpecies(project_id, version_id) {
     let species;
     let data;
     let speciesList = [];
     try {
-      console.log("--------------=================================");
-      // get consolidated list
+      //1. get consolidated list of species from given project, version id
       data = await ConsolidatedListService.getConsolidatedListByProjectVersionID(
         project_id,
         version_id
       );
 
       // #TODO in product version 2 - add species in loo and update those that doesn't exist in the table -- (ignore atm)
-
       for (var i = 0; i < data.length; i++) {
         try {
-          // search base data for species in consolidated list
+          // 2. search for species in BaseData table for matching species id in consolidated list
           species = await BaseDataService.getSpeciesById(data[i].SpeciesID);
 
-          // This line won't run if LOO table doesn't exist initially. However, if this is a second request (and this is Loo table)
-          // add Lookup and SurveyAdequecy scores to be displayed in the UI as default instead of nothing/0.
+          // 3. find species in LOO table (matching ConsolidatedList and BaseData table)
           let looSpecies = await LooAnalysisService.getSpeciesByProjectVersionID(
             project_id,
             version_id,
@@ -39,18 +40,12 @@ class LooAnalysisService {
               // add extra properties i.e. lookup and surveyscores to be displayed in LOO page as inital values
               species.dataValues.Lookup = looSpecies.Lookup;
               species.dataValues.SurveyAdequacy = looSpecies.SurveyAdequacy;
-
-              console.log("hahahahahahahahahahahahahahahaahahahh");
-              // console.log("Sending species is", species.dataValues);
             }
           }
 
           speciesList.push(species);
         } catch (err) {
-          console.log(
-            "-------------------------------->>>>>>>ERROR",
-            err.message
-          );
+          console.log("ERROR", err.message);
         }
       }
       // no species match base data that is in consolidated list
@@ -67,6 +62,7 @@ class LooAnalysisService {
     }
   }
 
+  // Returns LOO rows of species given project id and version id
   static async getLooListByProjectVersionID(projectID, versionID) {
     const looSpecies = await LOO.findAll({
       where: {
@@ -84,12 +80,7 @@ class LooAnalysisService {
     }
   }
 
-  // static async deleteList(projectID, versionID) {
-  //   await LOO.destroy({
-  //     where: { ProjectID: projectID, VersionID: versionID },
-  //   });
-  // }
-
+  //  Delete Species in LOO entry given project, version and species id
   static async deleteOne(projectID, versionID, speciesID) {
     await LOO.destroy({
       where: {
@@ -100,6 +91,7 @@ class LooAnalysisService {
     });
   }
 
+  // Returns single species in LOO table given project, version, species id
   static async getSpeciesByProjectVersionID(projectID, versionID, speciesID) {
     let species = await LOO.findOne({
       where: {
@@ -109,19 +101,13 @@ class LooAnalysisService {
       },
     });
 
-    // console.log(
-    //   "\n\n <><><><><><><><><><><><><><><><>><><><><><><Finding loo species: \n\n\n",
-    //   species || "nothing nulls"
-    // );
     return species;
   }
 
+  // Given array of LOO entry rows (and correspoinding project and version ids)
+  // saved the looSpecies in the LOO table
   static async saveLooAnalysis(looSpecies, projectID, versionID) {
-    // console.log("save to loo....");
     let looSavedSpecies;
-
-    // // update by deleting previous list is exists (removes duplicate saved of same list)
-    // await LooAnalysisService.deleteList(projectID, versionID);
 
     try {
       for (var i = 0; i < looSpecies.length; i++) {
@@ -131,10 +117,7 @@ class LooAnalysisService {
           versionID,
           looSpecies[i].SpeciesID
         );
-        // save project
-        // # TODO implenent on frontend?
-        // if species is type "plant" then in Loo fauna field is "no"
-        // if AtlasRecords (in ConsolidatedList) is greater than 5 - Recent field in Loo is "yes" true = 1, false = 0
+        // insert LOO table entry
         const looSpeciesBuilt = LOO.build({
           ProjectID: looSpecies[i].ProjectID,
           VersionID: looSpecies[i].VersionID,
@@ -156,7 +139,9 @@ class LooAnalysisService {
         versionID
       );
 
-      // Save initial loo species to impact intensity (from LOO table)
+      // Save LOO species to impact intensity (that exist in LOO table) from given project, version ids
+      // ImpactIntensity rows answer score fields  i.e. A1, A2, etc. are set to NULL
+      // until there are given in the ImpactIntensity page
       try {
         await ImpactIntensityService.saveConsolidatedList(
           looSavedSpecies,

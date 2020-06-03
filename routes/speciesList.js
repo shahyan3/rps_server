@@ -1,13 +1,17 @@
 var express = require("express");
 var router = express.Router();
 var BaseDataService = require("../services/BaseDataService");
-// const { baseDataSchema } = require("../models/BaseDataModel");
 
 // #DEVELOPMENT TEST ROUTE
 router.get("/", async (req, res, next) => {
   res.status(200).send({ message: "GET: SpeciesList" });
 });
 
+/*
+  Endpoint /api/speciesList/ 
+  @req.body speciesID
+  @return base data species row for the given species id 
+*/
 router.post("/", async (req, res, next) => {
   let species;
   let query;
@@ -26,6 +30,10 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+/*
+  Endpoint /api/speciesList/all
+  @return all base data species 
+*/
 router.post("/all", async (req, res, next) => {
   try {
     const allSpecies = await BaseDataService.getAllSpecies();

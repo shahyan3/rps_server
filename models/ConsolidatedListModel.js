@@ -6,13 +6,6 @@ const { Versions } = require("./VersionsModel");
 
 const sequelize = require("../config");
 
-// const sequelize = new Sequelize("rps_2020_test", "root", "password", {
-//   dialect: "mysql",
-//   dialectOptions: {
-//     // Your mysql2 options here
-//   }
-// });
-
 const ConsolidatedList = sequelize.define(
   "ConsolidatedList",
   {

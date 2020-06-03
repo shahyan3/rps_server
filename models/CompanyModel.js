@@ -3,13 +3,6 @@ const { Sequelize, Model, DataTypes } = require("sequelize");
 
 const sequelize = require("../config");
 
-// const sequelize = new Sequelize("rps_2020_test", "root", "password", {
-//   dialect: "mysql",
-//   dialectOptions: {
-//     // Your mysql2 options here
-//   }
-// });
-
 const Companies = sequelize.define(
   "Companies",
   {
@@ -30,8 +23,6 @@ const Companies = sequelize.define(
 //   await sequelize.sync({ force: true });
 //   // Code here
 // })();
-
-// Joi Schema
 
 module.exports = {
   Companies,

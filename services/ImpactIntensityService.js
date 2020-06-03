@@ -1,3 +1,7 @@
+/*
+  ImpactIntensityService class implements methods to interface with the ImpactIntensity table in the database
+*/
+
 const {
   ImpactIntensity,
   sequelize,
@@ -10,6 +14,8 @@ const POSSIBLE = 1;
 const LIKELY = 2;
 
 class ImpactIntensityService {
+  // Given a impact row (i.e. species) with scores for A1, A2, A3 etc, columns
+  // this function returns the SignificantImpact Score of a given species
   static calculateSignificantImpact(species) {
     let significantImpact = null;
     let sumOfAnswers =
@@ -32,6 +38,8 @@ class ImpactIntensityService {
 
     return significantImpact;
   }
+  // Given a row id of a row in the ImpactIntensity table
+  // returns that row  from the ImpactIntensity table in database.
   static async getImpactIntensityRow(rowID) {
     const row = await ImpactIntensity.findOne({
       where: { ID: rowID },
@@ -46,6 +54,7 @@ class ImpactIntensityService {
     }
   }
 
+  // Given project and version id returns all the rows relating to these ids.
   static async getImpactIntensityByProjectVersionID(projectID, versionID) {
     const all = await ImpactIntensity.findAll({
       where: {
@@ -56,6 +65,7 @@ class ImpactIntensityService {
     return all;
   }
 
+  // Returns impact intensity row given project and version id excluding the SignificantImpact column
   static async getImpactIntensityByIdExcludeSignificantImpact(
     projectID,
     versionID
@@ -70,6 +80,13 @@ class ImpactIntensityService {
     return all;
   }
 
+  // Given the version, project ids, and array of species list i.e. allSpeciesRows
+  // this function selects rows in the ImpactIntensity table and updates the A1, A2, A3 etc.
+  // scores given
+  // @params version id
+  // @params project id
+  // @params allSpeciesRows (array of species objects with scores to be updated in table)
+  // @returns returns all updates rows in ImpactIntesity table
   static async impactIntensityUpdateAnalysis(
     versionID,
     projectID,
@@ -82,17 +99,14 @@ class ImpactIntensityService {
         let speciesRow = allSpeciesRows[i];
         // calculate significant impact value
         let significantImpact = this.calculateSignificantImpact(speciesRow);
-        console.log(
-          "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",
-          significantImpact
-        );
 
         if (significantImpact == null) {
           throw new Error(
             `ERR! Significant impact could not be counted from the answers given for ${speciesRow.SpeciesID}. Contact admin.`
           );
         }
-        // fetch impactRow from table
+        // find row entry in table with given project, species, version and row ids
+        // so answer scores can be updates i.e. A1, A2, A3 etc.
         const impactRow = await ImpactIntensity.findOne({
           where: {
             ID: speciesRow.ID,
@@ -102,7 +116,7 @@ class ImpactIntensityService {
           },
         });
 
-        // check if returned successfully
+        // check if impact row exist in the table, update the row's Answers A1, A2 etc. scores
         if (impactRow) {
           impactRow.update({
             A1: speciesRow.A1,
@@ -134,6 +148,7 @@ class ImpactIntensityService {
     }
   }
 
+  // given project id and version id delete all rows in ImpactIntensity table
   static async deleteList(projectID, versionID) {
     await ImpactIntensity.destroy({
       where: {
@@ -143,13 +158,18 @@ class ImpactIntensityService {
     });
   }
 
+  // Given array of species project id and version id this function saved Consolidated List (same as saved species in LOO table)
+  // to the ImpactIntensity table with the initial scores get to NULL
+  // @params project id
+  // @params version id
+  // @params looSavedSpeciesList (array of species to be saved in ImpactIntensity table)
+  // @returns saved species in the ImpactIntensity table
   static async saveConsolidatedList(looSavedSpeciesList, projectID, versionID) {
     // save list to impact intensity table
     let savedImpactIntensity;
     let lookupScore;
     let impactPotentialFlag = false;
 
-    // ###
     // update by deleting species previously saved in table (removes duplicate saved of same list)
     await ImpactIntensityService.deleteList(projectID, versionID);
 
@@ -161,7 +181,7 @@ class ImpactIntensityService {
       let lowScore = 1; // look up score // make it a constant LOWSCORE and true false as YES and NO constants below.
 
       // update potential for impact
-      // get lookup score of species, if <=1 potetial for impact flag is false
+      // get lookup score of species, if lookup score <=1 potetial for impact flag is false
       if (speciesLookup <= lowScore) {
         impactPotentialFlag = false;
       } else {

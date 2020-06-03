@@ -1,21 +1,26 @@
+/*
+  ProjectService class implements methods to interface with the Project table in the database
+*/
 const { Projects } = require("../models/ProjectModel");
 const { Companies, sequelize } = require("../models/CompanyModel");
-
 const VersionsService = require("./VersionsService");
 
 class ProjectService {
+  // Returns all projects in the Project table
   static async getAllProjects() {
     const projects = await Projects.findAll();
 
     return projects;
   }
 
+  // Deletes all projects in the Project table
   static async deleteAllProjects() {
     return await Projects.destroy({
       where: {},
     });
   }
 
+  // Given a Context text string returns the corresponding integer id for it
   static parseContextTEXT(text) {
     switch (text) {
       case "SSD Major Project":
@@ -38,6 +43,7 @@ class ProjectService {
         return 9;
     }
   }
+  // Given a Region text string returns the corresponding integer id for it
   static parseRegionTEXT(text) {
     switch (text) {
       case "Australian Alps":
@@ -81,14 +87,13 @@ class ProjectService {
     return null;
   }
 
+  // Given a Project table row id function returns project row from the Project table
   static async getProjectByID(id) {
     let project = await Projects.findOne({ where: { ID: id } });
 
     if (project) {
       let regionIDToText = this.parseRegionTEXT(project.Region);
       let contextIDToText = this.parseContextTEXT(project.Context);
-      console.log("}}}}}}}}}}}}}}}}}}}}}}", regionIDToText);
-      console.log("}}}}}}}}}}}}}}}}}}}}}}", project.dataValues.CommonWealth);
 
       project.dataValues.Region = regionIDToText;
       project.dataValues.Context = contextIDToText;
@@ -96,16 +101,20 @@ class ProjectService {
       return project;
     }
   }
+
+  // Given a RPS Project Id function returns project row from the Project table
   static async getProjectBy_RPSProjectID(rpsID) {
     let project = await Projects.findOne({ where: { RPSProjectID: rpsID } });
     return project;
   }
 
+  // Given a Project name function returns project row from the Project table
   static async getProjectByName(name) {
     const project = await Projects.findOne({ where: { Name: name } });
     return project;
   }
 
+  // Given a Context integer id returns the corresponding String text for it
   static parseContextID(id) {
     switch (id) {
       case 1:
@@ -128,7 +137,7 @@ class ProjectService {
         return "CommonWealth";
     }
   }
-
+  // Given a Region integer id returns the corresponding String text for it
   static parseRegionID(id) {
     switch (id) {
       case 1:
@@ -170,14 +179,15 @@ class ProjectService {
     }
   }
 
+  // Given a project object, Inserts into Project Table
   static async saveProject(project) {
     let versionBuilt;
 
+    // checks if the project exists with given rps project if field
     let projectExist = await this.getProjectBy_RPSProjectID(
       project.RPSProjectID
     );
-    /* 1) IF existing project is updated by user (update fields) in database */
-    console.log("+++++++++++++++++ RPS id", project.RPSProjectID);
+    /* 1) IF existing project is updated by user (update existing fields) in database */
     if (projectExist != null) {
       // check client's company exists in the db
       const company = await Companies.findOne({
@@ -239,7 +249,6 @@ class ProjectService {
       }
     } else {
       /* 2. Create a new project in database (since project doesn't exists) */
-
       // check client's company exists in the db
       const company = await Companies.findOne({
         where: { Name: project.CompanyName },
@@ -275,18 +284,6 @@ class ProjectService {
 
       let savedProject = await projectBuilt.save();
       console.log("\n Project Saved to database!\n\n");
-
-      // create a version (meta-data) for the (comes from frontend later on?) #TODO
-      // const versionData = {
-      //   ProjectID: projectBuilt.ID,
-      //   LastEdited: new Date(),
-      //   EditedBy: "John Doe", // #TODO when user system is implemented.
-      //   Progress: "Incomplete",
-      //   LastReviewed: new Date(),
-      //   ReviewedBy: "Mark T",
-      //   Created: new Date(),
-      //   CreatedBy: "Joe Doe",
-      // };
 
       if (savedProject) {
         versionBuilt = await VersionsService.saveVersion({

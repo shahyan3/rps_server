@@ -5,20 +5,13 @@ const { Projects } = require("../models/ProjectModel");
 
 const sequelize = require("../config");
 
-// const sequelize = new Sequelize("rps_2020_test", "root", "password", {
-//   dialect: "mysql",
-//   dialectOptions: {
-//     // Your mysql2 options here
-//   }
-// });
-
 const Versions = sequelize.define(
   "Versions",
   {
     VersionID: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
-      primaryKey: true
+      primaryKey: true,
     },
     ProjectID: DataTypes.INTEGER,
     LastEdited: DataTypes.DATE,
@@ -27,11 +20,11 @@ const Versions = sequelize.define(
     LastReviewed: DataTypes.DATE,
     ReviewedBy: DataTypes.TEXT,
     Created: DataTypes.DATE,
-    CreatedBy: DataTypes.TEXT
+    CreatedBy: DataTypes.TEXT,
   },
   {
     tableName: "Versions",
-    timestamps: false
+    timestamps: false,
   }
 );
 
@@ -41,7 +34,7 @@ const Versions = sequelize.define(
 // Create foreign keys
 Versions.belongsTo(Projects, {
   onDelete: "cascade",
-  foreignKey: "ProjectID"
+  foreignKey: "ProjectID",
 });
 
 // (async () => {
@@ -68,5 +61,5 @@ const versionSchema = Joi.object({
 module.exports = {
   Versions,
   sequelize,
-  versionSchema
+  versionSchema,
 };

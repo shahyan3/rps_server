@@ -19,6 +19,10 @@ var adminProjects = require("./routes/admin/projects");
 
 var app = express();
 
+/*
+  JWT token:
+  Block of code is commented out until authentication features implemented i.e. login/logout is implemented  
+*/
 // ensure the jwt key is set in the environment variable for the app.
 // this key defined by environment variable brat_jwtPrivateKey is used in auth.js route jwt.sign(),
 // to sign the jwt token against a "key" - created on the server side, checked below
@@ -50,9 +54,5 @@ app.use("/auth", authRouter);
 app.use("/admin/projects", adminProjects);
 
 console.log("====> new :]");
-
-// app.use("/users", usersRouter);
-
-// console.log("DATABASE: " + process.env.DB_NAME);
 
 module.exports = app;
