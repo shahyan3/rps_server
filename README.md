@@ -1,4 +1,6 @@
-Web Api Server for the Ecology Department of [REDACTED] to digitize
+Web Api Server
+
+Project: the Ecology Department of [REDACTED] to digitize
 their environment impact and assessment process existing on excel.
 
 - Server exposes endpoints for client-side (React) application to consume. 
